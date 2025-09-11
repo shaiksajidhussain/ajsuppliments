@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+/* Dark mode support */
+@layer base {
+  :root {
+    --color-primary: 59 130 246;
+    --color-secondary: 99 102 241;
+    --color-accent: 168 85 247;
+    --color-background: 255 255 255;
+    --color-foreground: 17 24 39;
+    --color-muted: 243 244 246;
+    --color-muted-foreground: 107 114 128;
+  }
+
+  .dark {
+    --color-primary: 96 165 250;
+    --color-secondary: 129 140 248;
+    --color-accent: 196 181 253;
+    --color-background: 17 24 39;
+    --color-foreground: 243 244 246;
+    --color-muted: 31 41 55;
+    --color-muted-foreground: 156 163 175;
+  }
+
+  * {
+    border-color: rgb(var(--color-muted));
+  }
+
+  body {
+    background-color: rgb(var(--color-background));
+    color: rgb(var(--color-foreground));
+  }
+}
+
+/* Custom utilities */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, rgb(var(--color-primary)) 0%, rgb(var(--color-secondary)) 100%);
+  }
+  
+  .bg-gradient-accent {
+    background: linear-gradient(135deg, rgb(var(--color-secondary)) 0%, rgb(var(--color-accent)) 100%);
+  }
+  
+  .text-gradient {
+    background: linear-gradient(135deg, rgb(var(--color-primary)) 0%, rgb(var(--color-secondary)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
