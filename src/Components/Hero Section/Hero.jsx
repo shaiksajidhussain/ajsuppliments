@@ -58,8 +58,8 @@ const Hero = () => {
         }}
         parallax={true}
         navigation={{
-          nextEl: '.swiper-button-next-custom',
-          prevEl: '.swiper-button-prev-custom',
+          nextEl: '.swiper-button-next-custom, .swiper-button-next-custom-mobile',
+          prevEl: '.swiper-button-prev-custom, .swiper-button-prev-custom-mobile',
         }}
         pagination={{
           el: '.swiper-pagination-custom',
@@ -198,8 +198,8 @@ const Hero = () => {
           </SwiperSlide>
         ))}
 
-        {/* Custom Navigation Buttons */}
-        <div className="swiper-button-prev-custom absolute left-8 top-1/2 -translate-y-1/2 z-20 group">
+        {/* Custom Navigation Buttons - Desktop */}
+        <div className="swiper-button-prev-custom absolute left-8 top-1/2 -translate-y-1/2 z-20 group hidden md:block">
           <button className={`p-4 rounded-full transition-all duration-700 ease-smooth hover:scale-125 hover:shadow-glow-xl ${
             isDarkMode 
               ? 'bg-gray-900/90 hover:bg-gray-800/95 text-white backdrop-blur-md' 
@@ -211,13 +211,38 @@ const Hero = () => {
           </button>
         </div>
 
-        <div className="swiper-button-next-custom absolute right-8 top-1/2 -translate-y-1/2 z-20 group">
+        <div className="swiper-button-next-custom absolute right-8 top-1/2 -translate-y-1/2 z-20 group hidden md:block">
           <button className={`p-4 rounded-full transition-all duration-700 ease-smooth hover:scale-125 hover:shadow-glow-xl ${
             isDarkMode 
               ? 'bg-gray-900/90 hover:bg-gray-800/95 text-white backdrop-blur-md' 
               : 'bg-white/90 hover:bg-white/95 text-gray-800 backdrop-blur-md'
           }`}>
             <svg className="w-7 h-7 transition-all duration-500 ease-smooth group-hover:translate-x-1 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Mobile Navigation Buttons - Bottom */}
+        <div className="swiper-button-prev-custom-mobile absolute bottom-8 left-1/2 -translate-x-16 z-20 group md:hidden">
+          <button className={`p-3 rounded-full transition-all duration-700 ease-smooth hover:scale-125 hover:shadow-glow-xl ${
+            isDarkMode 
+              ? 'bg-gray-900/90 hover:bg-gray-800/95 text-white backdrop-blur-md' 
+              : 'bg-white/90 hover:bg-white/95 text-gray-800 backdrop-blur-md'
+          }`}>
+            <svg className="w-6 h-6 transition-all duration-500 ease-smooth group-hover:-translate-x-1 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="swiper-button-next-custom-mobile absolute bottom-8 left-1/2 translate-x-4 z-20 group md:hidden">
+          <button className={`p-3 rounded-full transition-all duration-700 ease-smooth hover:scale-125 hover:shadow-glow-xl ${
+            isDarkMode 
+              ? 'bg-gray-900/90 hover:bg-gray-800/95 text-white backdrop-blur-md' 
+              : 'bg-white/90 hover:bg-white/95 text-gray-800 backdrop-blur-md'
+          }`}>
+            <svg className="w-6 h-6 transition-all duration-500 ease-smooth group-hover:translate-x-1 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
             </svg>
           </button>
