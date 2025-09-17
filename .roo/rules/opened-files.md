@@ -1,10 +1,10 @@
 # Opened Files
 ## File Name
-src/Components/Login/Login.jsx
+src/Components/Login/OurSoftware.jsx
 ## File Content
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
-const Login = ({ onLogin }) => {
+const OurSoftware = () => {
   const [formData, setFormData] = useState({
     feedBatchWeight: '100',
     species: '',
@@ -269,16 +269,6 @@ const Login = ({ onLogin }) => {
   };
 
 
-  // Check if user is already logged in and set page title
-  useEffect(() => {
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    if (isLoggedIn === 'true') {
-      onLogin();
-    }
-    
-    // Set page title
-    document.title = 'Login - Feed Formulation';
-  }, [onLogin]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -362,13 +352,7 @@ const Login = ({ onLogin }) => {
       return;
     }
 
-    // Store form data in localStorage
-    localStorage.setItem('isLoggedIn', 'true');
-    localStorage.setItem('feedFormData', JSON.stringify(formData));
-    localStorage.setItem('loginTime', new Date().toISOString());
-    
-    // Call parent component's onLogin function
-    onLogin();
+   
   };
 
 
@@ -556,7 +540,7 @@ const Login = ({ onLogin }) => {
   );
 };
 
-export default Login;
+export default OurSoftware;
 
 # Opened Files
 ## File Name
@@ -574,7 +558,7 @@ import Ourproducts from './Components/Our Products/Ourproducts';
 import Ourceritifications from './Components/Our Certifications/Ourceritifications';
 import Oursoftwareadnwhoweare from './Components/Our Software/Oursoftwareadnwhoweare';
 import Contact from './Components/Contact Form/Contact';
-import Login from './Components/Login/Login';
+import OurSoftware from './Components/Login/OurSoftware';
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -624,8 +608,8 @@ const App = () => {
         <Routes>
           {/* Login Route */}
           <Route 
-            path="/login" 
-            element={<Login onLogin={handleLogin} />}
+            path="/oursoftware" 
+            element={<OurSoftware  />}
           />
           
           {/* Main App Route */}
@@ -689,6 +673,7 @@ export default App;
 src/Components/Navbar/Navbar.jsx
 ## File Content
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -934,14 +919,61 @@ const Navbar = ({ onLogout }) => {
           {/* Navigation Links */}
           <div className="hidden md:flex items-center" style={{ gap: '3rem' }}>
             {[
-              { name: 'ABOUT', id: 'about' },
-              { name: 'EXPERTISE', id: 'expertise' },
-              { name: 'PRODUCTS', id: 'products' },
-              { name: 'CERTIFICATIONS', id: 'certifications' },
-              // { name: 'SOFTWARE', id: 'software' },
-              { name: 'CONTACT', id: 'contact' }
+              { name: 'ABOUT', id: 'about', type: 'scroll' },
+              { name: 'EXPERTISE', id: 'expertise', type: 'scroll' },
+              { name: 'PRODUCTS', id: 'products', type: 'scroll' },
+              // { name: 'CERTIFICATIONS', id: 'certifications', type: 'scroll' },
+              { name: 'SOFTWARE', id: 'oursoftware', type: 'route' },
+              { name: 'CONTACT', id: 'contact', type: 'scroll' }
             ].map((link, index) => {
-              const isActive = activeSection === link.id;
+              const isActive = link.type === 'scroll' ? activeSection === link.id : window.location.pathname === `/${link.id}`;
+              
+              if (link.type === 'route') {
+                return (
+                  <Link
+                    key={link.name}
+                    ref={el => navLinksRef.current[index] = el}
+                    to={`/${link.id}`}
+                    style={{
+                      fontWeight: 'bold',
+                      fontSize: '14px',
+                      letterSpacing: '0.2em',
+                      padding: '8px 16px',
+                      textDecoration: 'none',
+                      transition: 'all 0.3s ease',
+                      cursor: 'pointer',
+                      color: isActive 
+                        ? (isDarkMode ? '#60A5FA' : '#3B82F6')
+                        : (isDarkMode ? '#E5E7EB' : '#374151'),
+                      position: 'relative'
+                    }}
+                    className={`transition-all duration-300 ${
+                      isDarkMode ? 'hover:text-blue-400' : 'hover:text-blue-600'
+                    }`}
+                    onMouseEnter={() => handleLinkHover(index, true)}
+                    onMouseLeave={() => handleLinkHover(index, false)}
+                  >
+                    {link.name}
+                    {/* Active indicator */}
+                    {isActive && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          bottom: '-8px',
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          width: '6px',
+                          height: '6px',
+                          borderRadius: '50%',
+                          backgroundColor: isDarkMode ? '#60A5FA' : '#3B82F6',
+                          boxShadow: `0 0 10px ${isDarkMode ? '#60A5FA' : '#3B82F6'}`
+                        }}
+                      />
+                    )}
+                  </Link>
+                );
+              }
+              
               return (
                 <a
                   key={link.name}
@@ -1047,31 +1079,7 @@ const Navbar = ({ onLogout }) => {
             </button>
 
             {/* Logout Button */}
-            <button
-              onClick={onLogout}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '6px',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                backgroundColor: isDarkMode ? '#DC2626' : '#EF4444',
-                color: 'white',
-                fontSize: '14px',
-                fontWeight: '500'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = isDarkMode ? '#B91C1C' : '#DC2626';
-                e.target.style.transform = 'scale(1.05)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = isDarkMode ? '#DC2626' : '#EF4444';
-                e.target.style.transform = 'scale(1)';
-              }}
-              aria-label="Logout"
-            >
-              Logout
-            </button>
+      
           </div>
 
           {/* Mobile Menu Button */}
@@ -1094,14 +1102,52 @@ const Navbar = ({ onLogout }) => {
           <div className="md:hidden mt-6 py-6 border-t border-gray-300 dark:border-gray-600">
             <div className="flex flex-col space-y-4">
               {[
-                { name: 'ABOUT', id: 'about' },
-                { name: 'EXPERTISE', id: 'expertise' },
-                { name: 'PRODUCTS', id: 'products' },
-                { name: 'CERTIFICATIONS', id: 'certifications' },
-                { name: 'SOFTWARE', id: 'software' },
-                { name: 'CONTACT', id: 'contact' }
+                { name: 'ABOUT', id: 'about', type: 'scroll' },
+                { name: 'EXPERTISE', id: 'expertise', type: 'scroll' },
+                { name: 'PRODUCTS', id: 'products', type: 'scroll' },
+                { name: 'CERTIFICATIONS', id: 'certifications', type: 'scroll' },
+                { name: 'SOFTWARE', id: 'oursoftware', type: 'route' }, 
+                { name: 'CONTACT', id: 'contact', type: 'scroll' }
               ].map((link) => {
-                const isActive = activeSection === link.id;
+                const isActive = link.type === 'scroll' ? activeSection === link.id : window.location.pathname === `/${link.id}`;
+                
+                if (link.type === 'route') {
+                  return (
+                    <Link
+                      key={link.name}
+                      to={`/${link.id}`}
+                      className={`block py-3 font-bold text-sm tracking-[0.2em] uppercase transition-all duration-300 hover:scale-105 relative ${
+                        isActive
+                          ? (isDarkMode ? 'text-blue-400' : 'text-blue-600')
+                          : (isDarkMode ? 'text-gray-200 hover:text-blue-400' : 'text-gray-700 hover:text-blue-600')
+                      }`}
+                      onClick={() => setIsMenuOpen(false)}
+                      style={{
+                        color: isActive 
+                          ? (isDarkMode ? '#60A5FA' : '#3B82F6')
+                          : undefined
+                      }}
+                    >
+                      {link.name}
+                      {/* Active indicator for mobile */}
+                      {isActive && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            left: '-16px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            width: '4px',
+                            height: '20px',
+                            borderRadius: '2px',
+                            backgroundColor: isDarkMode ? '#60A5FA' : '#3B82F6'
+                          }}
+                        />
+                      )}
+                    </Link>
+                  );
+                }
+                
                 return (
                   <a
                     key={link.name}
@@ -1164,111 +1210,3 @@ const Navbar = ({ onLogout }) => {
 
 export default Navbar;
 
-# Opened Files
-## File Name
-src/Components/Login/test
-## File Content
- <div className="bg-gray-50 rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">Select Ingredients:</h2>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Protein Sources */}
-              <div>
-                <h3 className="text-md font-medium text-gray-800 mb-4">Protein Sources</h3>
-                <div className="max-h-80 overflow-y-auto border border-gray-200 rounded-md p-4 bg-white">
-                  {proteinSources.map((ingredient, index) => (
-                    <div key={index} className="flex items-center mb-2">
-                      <input
-                        type="checkbox"
-                        id={`protein-${index}`}
-                        checked={selectedIngredients.protein.includes(ingredient)}
-                        onChange={(e) => handleIngredientChange('protein', ingredient, e.target.checked)}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label htmlFor={`protein-${index}`} className="ml-2 text-sm text-gray-700">
-                        {ingredient}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Medium Sources */}
-              <div>
-                <h3 className="text-md font-medium text-gray-800 mb-4">Medium Sources</h3>
-                <div className="max-h-80 overflow-y-auto border border-gray-200 rounded-md p-4 bg-white">
-                  {mediumSources.map((ingredient, index) => (
-                    <div key={index} className="flex items-center mb-2">
-                      <input
-                        type="checkbox"
-                        id={`medium-${index}`}
-                        checked={selectedIngredients.medium.includes(ingredient)}
-                        onChange={(e) => handleIngredientChange('medium', ingredient, e.target.checked)}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label htmlFor={`medium-${index}`} className="ml-2 text-sm text-gray-700">
-                        {ingredient}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Energy Sources */}
-              <div>
-                <h3 className="text-md font-medium text-gray-800 mb-4">Energy Sources</h3>
-                <div className="max-h-80 overflow-y-auto border border-gray-200 rounded-md p-4 bg-white">
-                  {energySources.map((ingredient, index) => (
-                    <div key={index} className="flex items-center mb-2">
-                      <input
-                        type="checkbox"
-                        id={`energy-${index}`}
-                        checked={selectedIngredients.energy.includes(ingredient)}
-                        onChange={(e) => handleIngredientChange('energy', ingredient, e.target.checked)}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label htmlFor={`energy-${index}`} className="ml-2 text-sm text-gray-700">
-                        {ingredient}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Action Button */}
-          <div className="flex justify-center">
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`px-8 py-3 rounded-lg font-medium text-white transition duration-150 ease-in-out ${
-                isLoading
-                  ? 'bg-gray-400 cursor-not-allowed' 
-                  : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
-              }`}
-            >
-              {isLoading ? (
-                <div className="flex items-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Processing...
-                </div>
-              ) : (
-                'Calculate'
-              )}
-            </button>
-          </div>
-
-          {/* Clear Data Button */}
-          <div className="flex justify-center">
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="text-sm text-gray-500 hover:text-gray-700 transition duration-150 ease-in-out"
-            >
-              Clear Form Data
-            </button>
-          </div>

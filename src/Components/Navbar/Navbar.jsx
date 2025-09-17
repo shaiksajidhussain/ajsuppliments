@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -244,14 +245,61 @@ const Navbar = ({ onLogout }) => {
           {/* Navigation Links */}
           <div className="hidden md:flex items-center" style={{ gap: '3rem' }}>
             {[
-              { name: 'ABOUT', id: 'about' },
-              { name: 'EXPERTISE', id: 'expertise' },
-              { name: 'PRODUCTS', id: 'products' },
-              { name: 'CERTIFICATIONS', id: 'certifications' },
-              // { name: 'SOFTWARE', id: 'software' },
-              { name: 'CONTACT', id: 'contact' }
+              { name: 'ABOUT', id: 'about', type: 'scroll' },
+              { name: 'EXPERTISE', id: 'expertise', type: 'scroll' },
+              { name: 'PRODUCTS', id: 'products', type: 'scroll' },
+              // { name: 'CERTIFICATIONS', id: 'certifications', type: 'scroll' },
+              { name: 'SOFTWARE', id: 'oursoftware', type: 'route' },
+              { name: 'CONTACT', id: 'contact', type: 'scroll' }
             ].map((link, index) => {
-              const isActive = activeSection === link.id;
+              const isActive = link.type === 'scroll' ? activeSection === link.id : window.location.pathname === `/${link.id}`;
+              
+              if (link.type === 'route') {
+                return (
+                  <Link
+                    key={link.name}
+                    ref={el => navLinksRef.current[index] = el}
+                    to={`/${link.id}`}
+                    style={{
+                      fontWeight: 'bold',
+                      fontSize: '14px',
+                      letterSpacing: '0.2em',
+                      padding: '8px 16px',
+                      textDecoration: 'none',
+                      transition: 'all 0.3s ease',
+                      cursor: 'pointer',
+                      color: isActive 
+                        ? (isDarkMode ? '#60A5FA' : '#3B82F6')
+                        : (isDarkMode ? '#E5E7EB' : '#374151'),
+                      position: 'relative'
+                    }}
+                    className={`transition-all duration-300 ${
+                      isDarkMode ? 'hover:text-blue-400' : 'hover:text-blue-600'
+                    }`}
+                    onMouseEnter={() => handleLinkHover(index, true)}
+                    onMouseLeave={() => handleLinkHover(index, false)}
+                  >
+                    {link.name}
+                    {/* Active indicator */}
+                    {isActive && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          bottom: '-8px',
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          width: '6px',
+                          height: '6px',
+                          borderRadius: '50%',
+                          backgroundColor: isDarkMode ? '#60A5FA' : '#3B82F6',
+                          boxShadow: `0 0 10px ${isDarkMode ? '#60A5FA' : '#3B82F6'}`
+                        }}
+                      />
+                    )}
+                  </Link>
+                );
+              }
+              
               return (
                 <a
                   key={link.name}
@@ -380,14 +428,52 @@ const Navbar = ({ onLogout }) => {
           <div className="md:hidden mt-6 py-6 border-t border-gray-300 dark:border-gray-600">
             <div className="flex flex-col space-y-4">
               {[
-                { name: 'ABOUT', id: 'about' },
-                { name: 'EXPERTISE', id: 'expertise' },
-                { name: 'PRODUCTS', id: 'products' },
-                { name: 'CERTIFICATIONS', id: 'certifications' },
-                { name: 'SOFTWARE', id: 'software' },
-                { name: 'CONTACT', id: 'contact' }
+                { name: 'ABOUT', id: 'about', type: 'scroll' },
+                { name: 'EXPERTISE', id: 'expertise', type: 'scroll' },
+                { name: 'PRODUCTS', id: 'products', type: 'scroll' },
+                { name: 'CERTIFICATIONS', id: 'certifications', type: 'scroll' },
+                { name: 'SOFTWARE', id: 'oursoftware', type: 'route' }, 
+                { name: 'CONTACT', id: 'contact', type: 'scroll' }
               ].map((link) => {
-                const isActive = activeSection === link.id;
+                const isActive = link.type === 'scroll' ? activeSection === link.id : window.location.pathname === `/${link.id}`;
+                
+                if (link.type === 'route') {
+                  return (
+                    <Link
+                      key={link.name}
+                      to={`/${link.id}`}
+                      className={`block py-3 font-bold text-sm tracking-[0.2em] uppercase transition-all duration-300 hover:scale-105 relative ${
+                        isActive
+                          ? (isDarkMode ? 'text-blue-400' : 'text-blue-600')
+                          : (isDarkMode ? 'text-gray-200 hover:text-blue-400' : 'text-gray-700 hover:text-blue-600')
+                      }`}
+                      onClick={() => setIsMenuOpen(false)}
+                      style={{
+                        color: isActive 
+                          ? (isDarkMode ? '#60A5FA' : '#3B82F6')
+                          : undefined
+                      }}
+                    >
+                      {link.name}
+                      {/* Active indicator for mobile */}
+                      {isActive && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            left: '-16px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            width: '4px',
+                            height: '20px',
+                            borderRadius: '2px',
+                            backgroundColor: isDarkMode ? '#60A5FA' : '#3B82F6'
+                          }}
+                        />
+                      )}
+                    </Link>
+                  );
+                }
+                
                 return (
                   <a
                     key={link.name}

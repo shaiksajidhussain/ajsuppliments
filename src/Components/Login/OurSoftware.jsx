@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
-const Login = ({ onLogin }) => {
+const OurSoftware = () => {
   const [formData, setFormData] = useState({
     feedBatchWeight: '100',
     species: '',
@@ -265,16 +265,6 @@ const Login = ({ onLogin }) => {
   };
 
 
-  // Check if user is already logged in and set page title
-  useEffect(() => {
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    if (isLoggedIn === 'true') {
-      onLogin();
-    }
-    
-    // Set page title
-    document.title = 'Login - Feed Formulation';
-  }, [onLogin]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -358,37 +348,44 @@ const Login = ({ onLogin }) => {
       return;
     }
 
-    // Store form data in localStorage
-    localStorage.setItem('isLoggedIn', 'true');
-    localStorage.setItem('feedFormData', JSON.stringify(formData));
-    localStorage.setItem('loginTime', new Date().toISOString());
-    
-    // Call parent component's onLogin function
-    onLogin();
+   
   };
 
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Login - Feed Formulation</h1>
-          <button className="p-2 hover:bg-gray-100 rounded-md">
-            <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+    <div 
+      className="min-h-screen relative"
+      style={{
+        backgroundImage: 'url(https://images.stockcake.com/public/1/4/d/14d133a4-16ec-46bf-b384-da364125b7ff_large/sunset-farm-hen-stockcake.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-black/75"></div>
+      
+      {/* Content */}
+      <div className="relative z-10">
+        {/* Header */}
+        <div className=" backdrop-blur-sm border-b border-gray-200 px-6 py-4" style={{padding: '32px 16px'}}>
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-white">Feed Formulation</h1>
+            <button className="p-2 hover:bg-gray-100 rounded-md">
+              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* General Formulation Parameters */}
-          <div className="bg-gray-50 rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">General Formulation Parameters</h2>
+        <div className="max-w-7xl mx-auto px-6 py-8" style={{padding: '32px 16px'}} >
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* General Formulation Parameters */}
+            <div className="bg-white/95 backdrop-blur-sm rounded-lg p-6 shadow-xl border border-white/20">
+            <h2 className="text-lg font-semibold text-gray-900 text-5xl" style={{padding: '10px 16px'}}>General Formulation Parameters</h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 " style={{padding: '32px 16px'}}>
               {/* Feed Batch Weight */}
               <div>
                 <label htmlFor="feedBatchWeight" className="block text-sm font-medium text-gray-700 mb-2">
@@ -544,12 +541,13 @@ const Login = ({ onLogin }) => {
             )}
           </div>
 
-          {/* Select Ingredients Section */}
-         
-        </form>
+            {/* Select Ingredients Section */}
+           
+          </form>
+        </div>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default OurSoftware;
