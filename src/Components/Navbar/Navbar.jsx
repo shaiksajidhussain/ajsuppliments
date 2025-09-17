@@ -6,14 +6,23 @@ import { useTheme } from '../../contexts/ThemeContext';
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
 
-const Navbar = () => {
+const Navbar = ({ onLogout }) => {
   const { isDarkMode, toggleTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('hero');
+  const [username, setUsername] = useState('');
   const navbarRef = useRef(null);
   const logoRef = useRef(null);
   const navLinksRef = useRef([]);
   const themeToggleRef = useRef(null);
+
+  // Get username from localStorage
+  useEffect(() => {
+    const storedUsername = localStorage.getItem('username');
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
+  }, []);
 
   // Theme toggle handler is now from context
 
@@ -297,39 +306,59 @@ const Navbar = () => {
             })}
           </div>
 
-          {/* Theme Toggle */}
-          <button
-            ref={themeToggleRef}
-            onClick={handleThemeToggle}
-            style={{
-              padding: '12px',
-              borderRadius: '50%',
-              border: 'none',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              backgroundColor: isDarkMode ? '#374151' : '#E5E7EB',
-              color: isDarkMode ? '#FBBF24' : '#6B7280'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = 'scale(1.1)';
-              e.target.style.backgroundColor = isDarkMode ? '#4B5563' : '#D1D5DB';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = 'scale(1)';
-              e.target.style.backgroundColor = isDarkMode ? '#374151' : '#E5E7EB';
-            }}
-            aria-label="Toggle theme"
-          >
-            {isDarkMode ? (
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
-              </svg>
-            ) : (
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-              </svg>
+          {/* User Info and Controls */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {/* Username Display */}
+            {username && (
+              <div style={{
+                padding: '8px 16px',
+                borderRadius: '20px',
+                backgroundColor: isDarkMode ? '#374151' : '#E5E7EB',
+                color: isDarkMode ? '#D1D5DB' : '#374151',
+                fontSize: '14px',
+                fontWeight: '500'
+              }}>
+                Welcome, {username}
+              </div>
             )}
-          </button>
+
+            {/* Theme Toggle */}
+            <button
+              ref={themeToggleRef}
+              onClick={handleThemeToggle}
+              style={{
+                padding: '12px',
+                borderRadius: '50%',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                backgroundColor: isDarkMode ? '#374151' : '#E5E7EB',
+                color: isDarkMode ? '#FBBF24' : '#6B7280'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'scale(1.1)';
+                e.target.style.backgroundColor = isDarkMode ? '#4B5563' : '#D1D5DB';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'scale(1)';
+                e.target.style.backgroundColor = isDarkMode ? '#374151' : '#E5E7EB';
+              }}
+              aria-label="Toggle theme"
+            >
+              {isDarkMode ? (
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                </svg>
+              )}
+            </button>
+
+            {/* Logout Button */}
+      
+          </div>
 
           {/* Mobile Menu Button */}
           <button
@@ -394,6 +423,23 @@ const Navbar = () => {
                   </a>
                 );
               })}
+              
+              {/* Mobile Logout Button */}
+              <div className="pt-4 border-t border-gray-300 dark:border-gray-600">
+                <button
+                  onClick={() => {
+                    onLogout();
+                    setIsMenuOpen(false);
+                  }}
+                  className={`w-full py-3 px-4 rounded-lg font-medium text-sm transition-all duration-300 ${
+                    isDarkMode 
+                      ? 'bg-red-600 hover:bg-red-700 text-white' 
+                      : 'bg-red-500 hover:bg-red-600 text-white'
+                  }`}
+                >
+                  Logout
+                </button>
+              </div>
             </div>
           </div>
         )}
