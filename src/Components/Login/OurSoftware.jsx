@@ -383,7 +383,7 @@ const OurSoftware = () => {
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* General Formulation Parameters */}
             <div className="bg-white/95 backdrop-blur-sm rounded-lg p-6 shadow-xl border border-white/20">
-            <h2 className="text-lg font-semibold text-gray-900 text-5xl" style={{padding: '10px 16px'}}>General Formulation Parameters</h2>
+            <h2 className="text-5xl font-semibold text-gray-900" style={{padding: '10px 16px'}}>General Formulation Parameters</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 " style={{padding: '32px 16px'}}>
               {/* Feed Batch Weight */}
@@ -397,7 +397,7 @@ const OurSoftware = () => {
                   name="feedBatchWeight"
                   value={formData.feedBatchWeight}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                 />
               </div>
 
@@ -411,7 +411,7 @@ const OurSoftware = () => {
                   name="species"
                   value={formData.species}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                 >
                   <option value="">Select Species</option>
                   {speciesOptions.map((option) => (
@@ -433,7 +433,7 @@ const OurSoftware = () => {
                     name="subspecies"
                     value={formData.subspecies}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                   >
                     {subspeciesOptions.poultry.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -455,7 +455,7 @@ const OurSoftware = () => {
                     name="animalType"
                     value={formData.animalType}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                   >
                   {getAnimalTypeOptions(formData.subspecies, formData.species).map((option) => (
                     <option key={option.value} value={option.value}>
@@ -476,7 +476,7 @@ const OurSoftware = () => {
                   name="phase"
                   value={formData.phase}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                 >
                   {getPhaseOptions(formData.animalType, formData.subspecies, formData.species).map((option) => (
                     <option key={option.value} value={option.value}>
@@ -497,7 +497,7 @@ const OurSoftware = () => {
                   name="crudeProtein"
                   value={formData.crudeProtein}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                   placeholder="Enter percentage"
                 />
               </div>
