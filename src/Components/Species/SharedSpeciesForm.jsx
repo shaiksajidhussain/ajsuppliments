@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const OurSoftware = () => {
+const SharedSpeciesForm = ({ speciesType, speciesName, subspeciesOptions, getAnimalTypeOptions, getPhaseOptions, backgroundImage }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     feedBatchWeight: '100',
-    species: '',
+    species: speciesType,
     subspecies: '',
     animalType: 'broiler',
     phase: 'finisher',
@@ -14,270 +14,33 @@ const OurSoftware = () => {
     includePremix: true
   });
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Pre-populate species from localStorage
+  // Check authentication on component mount
   useEffect(() => {
-    const selectedSpecies = localStorage.getItem('selectedSpecies');
-    if (selectedSpecies) {
-      setFormData(prev => ({
-        ...prev,
-        species: selectedSpecies
-      }));
-    }
-  }, []);
-
-  // Species and subspecies options
-  const speciesOptions = [
-    { value: 'poultry', label: 'Poultry' },
-    { value: 'cattle', label: 'Cattle' },
-    { value: 'buffalo', label: 'Buffalo' },
-    { value: 'sheep', label: 'Sheep' },
-    { value: 'swine', label: 'Swine' },
-    { value: 'goat', label: 'Goat' }
-  ];
-
-  const subspeciesOptions = {
-    poultry: [
-      { value: 'chicken', label: 'Chicken' },
-      { value: 'quails', label: 'Quails' },
-      { value: 'turkey', label: 'Turkey' },
-      { value: 'duck', label: 'Duck' }
-    ],
-    cattle: [
-      { value: 'dairy', label: 'Dairy' },
-      { value: 'beef', label: 'Beef' }
-    ],
-    buffalo: [
-      { value: 'dairy_buffalo', label: 'Dairy Buffalo' },
-      { value: 'meat_buffalo', label: 'Meat Buffalo' }
-    ],
-    sheep: [
-      { value: 'wool', label: 'Wool' },
-      { value: 'meat', label: 'Meat' }
-    ],
-    swine: [
-      { value: 'piglet', label: 'Piglet' },
-      { value: 'grower', label: 'Grower' },
-      { value: 'finisher', label: 'Finisher' }
-    ],
-    goat: [
-      { value: 'dairy_goat', label: 'Dairy Goat' },
-      { value: 'meat_goat', label: 'Meat Goat' }
-    ]
-  };
-
-  // Animal Type options based on subspecies and species
-  const getAnimalTypeOptions = (subspecies, species) => {
-    // Special handling for Swine
-    if (species === 'swine') {
-      return [
-        { value: 'marketing_pigs', label: 'Marketing pigs' },
-        { value: 'no_marketing_pigs', label: 'No Marketing pigs' }
-      ];
-    }
-
-    // Default handling for other species
-    switch (subspecies) {
-      case 'quails':
-        return [
-          { value: 'broiler', label: 'Broilers' },
-          { value: 'breeder', label: 'Breeders' }
-        ];
-      case 'turkey':
-      case 'duck':
-        return [
-          { value: 'layer', label: 'Layers' }
-        ];
-      case 'chicken':
-      default:
-        return [
-          { value: 'broiler', label: 'Broilers' },
-          { value: 'layer', label: 'Layers' },
-          { value: 'broilerbreeder', label: 'Broiler Breeders' },
-          { value: 'layerbreeder', label: 'Layer Breeders' }
-        ];
-    }
-  };
-
-  // Phase options based on animal type, subspecies, and species
-  const getPhaseOptions = (animalType, subspecies, species) => {
-    // Special handling for Quails
-    if (subspecies === 'quails') {
-      switch (animalType) {
-        case 'broiler':
-          return [
-            { value: 'starter', label: 'Starter' },
-            { value: 'finisher', label: 'Finisher' }
-          ];
-        case 'breeder':
-          return [
-            { value: 'broiler_breeders', label: 'Broiler Breeders' },
-            { value: 'layer_breeders', label: 'Layer Breeders' }
-          ];
-        default:
-          return [
-            { value: 'starter', label: 'Starter' },
-            { value: 'finisher', label: 'Finisher' }
-          ];
-      }
-    }
-
-    // Special handling for Turkey
-    if (subspecies === 'turkey') {
-      switch (animalType) {
-        case 'layer':
-          return [
-            { value: '0_6wks', label: '0-6wks' },
-            { value: '6_12wks', label: '6-12 wks' },
-            { value: '12_18wks', label: '12-18 wks' },
-            { value: '18wk_pre_laying', label: '18wk pre-laying' },
-            { value: 'layers_breeder', label: 'Layers / Breeder' }
-          ];
-        default:
-          return [
-            { value: '0_6wks', label: '0-6wks' },
-            { value: '6_12wks', label: '6-12 wks' },
-            { value: '12_18wks', label: '12-18 wks' },
-            { value: '18wk_pre_laying', label: '18wk pre-laying' },
-            { value: 'breeder', label: 'Breeder' }
-          ];
-      }
-    }
-
-    // Special handling for Duck
-    if (subspecies === 'duck') {
-      switch (animalType) {
-        case 'layer':
-          return [
-            { value: 'starter_0_8wks', label: 'Starter (0-8 wks)' },
-            { value: 'grower_8_16wks', label: 'Grower (8 to 16 wks)' },
-            { value: 'rearer_16_20wks', label: 'Rearer (16-20 wks)' },
-            { value: 'layer_20wks', label: 'Layer (>20wks)' }
-          ];
-        default:
-          return [
-            { value: 'starter_0_8wks', label: 'Starter (0-8 wks)' },
-            { value: 'grower_8_16wks', label: 'Grower (8 to 16 wks)' },
-            { value: 'rearer_16_20wks', label: 'Rearer (16-20 wks)' },
-            { value: 'layer_20wks', label: 'Layer (>20wks)' }
-          ];
-      }
-    }
-
-    // Special handling for Cattle (using species directly)
-    if (species === 'cattle') {
-      return [
-        { value: 'calf_starter', label: 'Calf starter meal' },
-        { value: 'type1_high_yielding', label: 'Type 1 (High yielding)' },
-        { value: 'type2_medium_yielding', label: 'Type 2 (medium yielding)' },
-        { value: 'type3', label: 'Type 3' },
-        { value: 'gestating', label: 'Gestating' },
-        { value: 'lactating', label: 'Lactating' }
-      ];
-    }
-
-    // Special handling for Buffalo (using species directly)
-    if (species === 'buffalo') {
-      return [
-        { value: 'calf_starter', label: 'Calf starter meal' },
-        { value: 'calf_growth', label: 'Calf growth meal' },
-        { value: 'type1_high_yielding', label: 'Type 1 (High yielding)' },
-        { value: 'type2_medium_yielding', label: 'Type 2 (medium yielding)' },
-        { value: 'type3', label: 'Type 3' },
-        { value: 'gestating', label: 'Gestating' },
-        { value: 'lactating', label: 'Lactating' }
-      ];
-    }
-
-    // Special handling for Sheep (using species directly)
-    if (species === 'sheep') {
-      return [
-        { value: 'growing_lambs', label: 'Growing lambs' },
-        { value: 'pregnant', label: 'Pregnant' },
-        { value: 'lactating', label: 'Lactating' },
-        { value: 'breeding_male', label: 'Breeding male' }
-      ];
-    }
-
-    // Special handling for Goat (using species directly)
-    if (species === 'goat') {
-      return [
-        { value: 'growing_lambs', label: 'Growing lambs' },
-        { value: 'pregnant', label: 'Pregnant' },
-        { value: 'lactating', label: 'Lactating' },
-        { value: 'breeding_male', label: 'Breeding male' }
-      ];
-    }
-
-    // Special handling for Swine (using species and animal type)
-    if (species === 'swine') {
-      if (animalType === 'marketing_pigs') {
-        return [
-          { value: 'starter_creep', label: 'Starter/Creep feed' },
-          { value: 'growers_feed', label: 'Growers feed' },
-          { value: 'finishing_feed', label: 'Finishing feed' }
-        ];
-      } else if (animalType === 'no_marketing_pigs') {
-        return [
-          { value: 'gestating_pigs', label: 'Gestating pigs' },
-          { value: 'nursing_sow', label: 'Nursing sow' },
-          { value: 'breeding_male', label: 'Breeding male' }
-        ];
+    const checkAuth = () => {
+      const isLoggedIn = localStorage.getItem('isLoggedIn');
+      if (isLoggedIn !== 'true') {
+        navigate('/login');
       } else {
-        // Default case - show all options
-        return [
-          { value: 'starter_creep', label: 'Starter/Creep feed' },
-          { value: 'growers_feed', label: 'Growers feed' },
-          { value: 'finishing_feed', label: 'Finishing feed' },
-          { value: 'gestating_pigs', label: 'Gestating pigs' },
-          { value: 'nursing_sow', label: 'Nursing sow' },
-          { value: 'breeding_male', label: 'Breeding male' }
-        ];
+        setIsLoading(false);
       }
-    }
+    };
 
-    // Default handling for Chicken and other subspecies
-    switch (animalType) {
-      case 'broiler':
-        return [
-          { value: 'starter', label: 'Starter' },
-          { value: 'grower', label: 'Grower' },
-          { value: 'finisher', label: 'Finisher' }
-        ];
-      case 'layer':
-        return [
-          { value: 'chick', label: 'Chick' },
-          { value: 'grower', label: 'Grower' },
-          { value: 'pre_layer', label: 'Pre layer' },
-          { value: 'layer', label: 'Layer ' },
-          { value: 'male', label: 'Male ' }
-        ];
-      case 'broilerbreeder':
-        return [
-          { value: 'chick', label: 'Chick' },
-          { value: 'grower', label: 'Grower' },
-          { value: 'pre_layer', label: 'Pre layer' },
-          { value: 'layer', label: 'Layer' },
-          { value: 'male', label: 'Male' }
-        ];
-      case 'layerbreeder':
-        return [
-          { value: 'chick', label: 'Chick' },
-          { value: 'grower', label: 'Grower' },
-          { value: 'pre_layer', label: 'Pre layer' },
-          { value: 'layer', label: 'Layer ' },
-          { value: 'male', label: 'Male ' }
-        ];
-      default:
-        return [
-          { value: 'starter', label: 'Starter' },
-          { value: 'grower', label: 'Grower' },
-          { value: 'finisher', label: 'Finisher' }
-        ];
-    }
-  };
+    checkAuth();
+  }, [navigate]);
 
-
+  // Show loading while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -344,7 +107,6 @@ const OurSoftware = () => {
     if (error) setError('');
   };
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -361,15 +123,15 @@ const OurSoftware = () => {
       return;
     }
 
-   
+    // Here you can add your form submission logic
+    console.log('Form submitted:', formData);
   };
-
 
   return (
     <div 
       className="min-h-screen relative"
       style={{
-        backgroundImage: 'url(https://images.stockcake.com/public/1/4/d/14d133a4-16ec-46bf-b384-da364125b7ff_large/sunset-farm-hen-stockcake.jpg)',
+        backgroundImage: `url(${backgroundImage || 'https://images.stockcake.com/public/1/4/d/14d133a4-16ec-46bf-b384-da364125b7ff_large/sunset-farm-hen-stockcake.jpg'})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat'
@@ -383,7 +145,7 @@ const OurSoftware = () => {
         {/* Header */}
         <div className=" backdrop-blur-sm border-b border-gray-200 px-6 py-4" style={{padding: '32px 16px'}}>
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-white">Feed Formulation</h1>
+            <h1 className="text-2xl font-bold text-white">{speciesName} Feed Formulation</h1>
             <div className="flex items-center space-x-4 gap-7">
               <button 
                 onClick={() => navigate('/species')}
@@ -446,17 +208,12 @@ const OurSoftware = () => {
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                 >
-                  <option value="">Select Species</option>
-                  {speciesOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
+                  <option value={speciesType}>{speciesName}</option>
                 </select>
               </div>
 
               {/* Subspecies - Only show for Poultry */}
-              {formData.species === 'poultry' && (
+              {formData.species === 'poultry' && subspeciesOptions && (
                 <div>
                   <label htmlFor="subspecies" className="block text-sm font-medium text-gray-700 mb-2">
                     Subspecies:
@@ -468,7 +225,7 @@ const OurSoftware = () => {
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                   >
-                    {subspeciesOptions.poultry.map((option) => (
+                    {subspeciesOptions.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
                       </option>
@@ -535,22 +292,6 @@ const OurSoftware = () => {
                 />
               </div>
 
-              {/* Energy */}
-              {/* <div>
-                <label htmlFor="energy" className="block text-sm font-medium text-gray-700 mb-2">
-                  Energy (kcal/kg) [optional]:
-                </label>
-                <input
-                  type="number"
-                  id="energy"
-                  name="energy"
-                  value={formData.energy}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter kcal/kg"
-                />
-              </div> */}
-
               {/* Include Premix */}
               <div className="flex items-center">
                 <input
@@ -583,4 +324,4 @@ const OurSoftware = () => {
   );
 };
 
-export default OurSoftware;
+export default SharedSpeciesForm;

@@ -19,7 +19,7 @@ const Navbar = ({ onLogout }) => {
 
   // Get username from localStorage
   useEffect(() => {
-    const storedUsername = localStorage.getItem('username');
+    const storedUsername = localStorage.getItem('userEmail');
     if (storedUsername) {
       setUsername(storedUsername);
     }
@@ -255,11 +255,25 @@ const Navbar = ({ onLogout }) => {
               const isActive = link.type === 'scroll' ? activeSection === link.id : window.location.pathname === `/${link.id}`;
               
               if (link.type === 'route') {
+                // Special handling for software route - check authentication
+                const handleSoftwareClick = (e) => {
+                  e.preventDefault();
+                  const isLoggedIn = localStorage.getItem('isLoggedIn');
+                  if (isLoggedIn === 'true') {
+                    // If logged in, go to species selection
+                    window.location.href = '/species';
+                  } else {
+                    // If not logged in, go to login
+                    window.location.href = '/login';
+                  }
+                };
+
                 return (
-                  <Link
+                  <a
                     key={link.name}
                     ref={el => navLinksRef.current[index] = el}
-                    to={`/${link.id}`}
+                    href="#"
+                    onClick={handleSoftwareClick}
                     style={{
                       fontWeight: 'bold',
                       fontSize: '14px',
@@ -296,7 +310,7 @@ const Navbar = ({ onLogout }) => {
                         }}
                       />
                     )}
-                  </Link>
+                  </a>
                 );
               }
               
@@ -357,7 +371,7 @@ const Navbar = ({ onLogout }) => {
           {/* User Info and Controls */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {/* Username Display */}
-            {username && (
+            {/* {username && (
               <div style={{
                 padding: '8px 16px',
                 borderRadius: '20px',
@@ -368,7 +382,7 @@ const Navbar = ({ onLogout }) => {
               }}>
                 Welcome, {username}
               </div>
-            )}
+            )} */}
 
             {/* Theme Toggle */}
             <button
@@ -405,7 +419,19 @@ const Navbar = ({ onLogout }) => {
             </button>
 
             {/* Logout Button */}
-      
+            {username && (
+              <button
+                onClick={onLogout}
+                style={{padding: '8px 16px'}}
+                className={` rounded-lg font-medium text-sm transition-all duration-300 ${
+                  isDarkMode 
+                    ? 'bg-red-600 hover:bg-red-700 text-white' 
+                    : 'bg-red-500 hover:bg-red-600 text-white'
+                }`}
+              >
+                Logout
+              </button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -438,16 +464,30 @@ const Navbar = ({ onLogout }) => {
                 const isActive = link.type === 'scroll' ? activeSection === link.id : window.location.pathname === `/${link.id}`;
                 
                 if (link.type === 'route') {
+                  // Special handling for software route - check authentication
+                  const handleMobileSoftwareClick = (e) => {
+                    e.preventDefault();
+                    setIsMenuOpen(false);
+                    const isLoggedIn = localStorage.getItem('isLoggedIn');
+                    if (isLoggedIn === 'true') {
+                      // If logged in, go to species selection
+                      window.location.href = '/species';
+                    } else {
+                      // If not logged in, go to login
+                      window.location.href = '/login';
+                    }
+                  };
+
                   return (
-                    <Link
+                    <a
                       key={link.name}
-                      to={`/${link.id}`}
+                      href="#"
+                      onClick={handleMobileSoftwareClick}
                       className={`block py-3 font-bold text-sm tracking-[0.2em] uppercase transition-all duration-300 hover:scale-105 relative ${
                         isActive
                           ? (isDarkMode ? 'text-blue-400' : 'text-blue-600')
                           : (isDarkMode ? 'text-gray-200 hover:text-blue-400' : 'text-gray-700 hover:text-blue-600')
                       }`}
-                      onClick={() => setIsMenuOpen(false)}
                       style={{
                         color: isActive 
                           ? (isDarkMode ? '#60A5FA' : '#3B82F6')
@@ -470,7 +510,7 @@ const Navbar = ({ onLogout }) => {
                           }}
                         />
                       )}
-                    </Link>
+                    </a>
                   );
                 }
                 

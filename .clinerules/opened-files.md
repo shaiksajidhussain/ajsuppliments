@@ -2,9 +2,11 @@
 ## File Name
 src/Components/Login/OurSoftware.jsx
 ## File Content
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const OurSoftware = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     feedBatchWeight: '100',
     species: '',
@@ -16,6 +18,17 @@ const OurSoftware = () => {
     includePremix: true
   });
   const [error, setError] = useState('');
+
+  // Pre-populate species from localStorage
+  useEffect(() => {
+    const selectedSpecies = localStorage.getItem('selectedSpecies');
+    if (selectedSpecies) {
+      setFormData(prev => ({
+        ...prev,
+        species: selectedSpecies
+      }));
+    }
+  }, []);
 
   // Species and subspecies options
   const speciesOptions = [
@@ -375,11 +388,31 @@ const OurSoftware = () => {
         <div className=" backdrop-blur-sm border-b border-gray-200 px-6 py-4" style={{padding: '32px 16px'}}>
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-white">Feed Formulation</h1>
-            <button className="p-2 hover:bg-gray-100 rounded-md">
-              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
+            <div className="flex items-center space-x-4 gap-7">
+              <button 
+                onClick={() => navigate('/species')}
+                className=" bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200"
+                style={{padding:'4px'}}
+              >
+                ← Back to Species
+              </button>
+              <span className="text-white text-sm">
+                Welcome, {localStorage.getItem('userEmail') || 'User'}
+              </span>
+              <button 
+                onClick={() => {
+                  localStorage.removeItem('isLoggedIn');
+                  localStorage.removeItem('userEmail');
+                  localStorage.removeItem('loginTime');
+                  localStorage.removeItem('selectedSpecies');
+                  navigate('/login');
+                }}
+                className=" bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200"
+                style={{padding:'4px'}}
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </div>
 
@@ -558,30 +591,204 @@ export default OurSoftware;
 
 # Opened Files
 ## File Name
-vite.config.js
+src/Components/Login/SpeciesSelection.jsx
 ## File Content
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import '../../index.css';
 
-export default defineConfig({
-  plugins: [
-    react(),
-    tailwindcss(),
-  ],
-  build: {
-    outDir: 'dist',
-    assetsDir: 'assets',
-  },
-  server: {
-    historyApiFallback: true,
-  },
-})
+const SpeciesSelection = () => {
+  const navigate = useNavigate();
+
+  const speciesData = [
+    {
+      id: 'poultry',
+      name: 'Poultry',
+      description: 'Chicken, Turkey, Duck, Quails',
+      image: 'https://media.istockphoto.com/id/1297318963/photo/silhouette-of-a-rooster-crow-in-the-morning-sunrise-background.jpg?s=612x612&w=0&k=20&c=EFp3wMROww5QjPhzuhH6-YTJRfmgeYh8SSa-7fMKTo0=',
+      gradient: 'from-yellow-400 to-orange-500',
+      hoverGradient: 'from-yellow-500 to-orange-600'
+    },
+    {
+      id: 'cattle',
+      name: 'Cattle',
+      description: 'Dairy and Beef Cattle',
+      image: 'https://static.vecteezy.com/system/resources/thumbnails/044/542/774/small_2x/cows-in-the-pasture-photo.jpeg',
+      gradient: 'from-brown-400 to-amber-600',
+      hoverGradient: 'from-brown-500 to-amber-700'
+    },
+    {
+      id: 'buffalo',
+      name: 'Buffalo',
+      description: 'Dairy and Meat Buffalo',
+      image: 'https://images.stockcake.com/public/1/2/d/12df69bb-748c-4f9e-b559-e65792ab4f5b_large/buffalo-at-sunset-stockcake.jpg',
+      gradient: 'from-gray-500 to-gray-700',
+      hoverGradient: 'from-gray-600 to-gray-800'
+    },
+    {
+      id: 'sheep',
+      name: 'Sheep',
+      description: 'Wool and Meat Sheep',
+      image: 'https://media.istockphoto.com/id/1366782202/photo/lamb-running-on-the-field-at-sunset.jpg?s=612x612&w=0&k=20&c=wZKync0nt9Q0TJ9ELxIQgZ_3qsCVDx4OSjwvp1yQrug=',
+      gradient: 'from-white to-gray-400',
+      hoverGradient: 'from-gray-100 to-gray-500'
+    },
+    {
+      id: 'swine',
+      name: 'Swine',
+      description: 'Pigs and Piglets',
+      image: 'https://media.istockphoto.com/id/153560796/photo/small-pig.jpg?s=612x612&w=0&k=20&c=sTm01xCQn20jJJqBoPXL3zQACIrM1zN9IOzNR9ta-Tk=',
+      gradient: 'from-pink-400 to-rose-600',
+      hoverGradient: 'from-pink-500 to-rose-700'
+    },
+    {
+      id: 'goat',
+      name: 'Goat',
+      description: 'Dairy and Meat Goats',
+      image: 'https://images.stockcake.com/public/4/3/b/43b07e85-2543-4186-83c2-05d9579b2267_large/goat-at-sunset-stockcake.jpg',
+      gradient: 'from-green-400 to-emerald-600',
+      hoverGradient: 'from-green-500 to-emerald-700'
+    }
+  ];
+
+  const handleSpeciesClick = (speciesId) => {
+    // Store selected species in localStorage
+    localStorage.setItem('selectedSpecies', speciesId);
+    // Navigate to specific species page
+    navigate(`/${speciesId}`);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('loginTime');
+    localStorage.removeItem('selectedSpecies');
+    navigate('/login');
+  };
+
+  return (
+    <div 
+      className="min-h-screen relative"
+      style={{
+        backgroundImage: 'url(https://images.stockcake.com/public/1/4/d/14d133a4-16ec-46bf-b384-da364125b7ff_large/sunset-farm-hen-stockcake.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-black/75"></div>
+      
+      {/* Content */}
+      <div className="relative z-10 ">
+        {/* Header */}
+        <div className="backdrop-blur-sm border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center justify-between gap-7">
+            <h1 className="text-4xl font-bold text-white " style={{padding:'16px'}}>Select Animal Species</h1>
+            <div className="flex items-center space-x-4 gap-7">
+              <span className="text-white text-sm">
+                Welcome, {localStorage.getItem('userEmail') || 'User'}
+              </span>
+              <button 
+                onClick={handleLogout}
+                className=" bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200"
+                style={{padding:'10px',marginRight:'10px'}}
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="max-w-7xl mx-auto px-6 py-8" style={{padding:'16px'}}>
+          <div className="text-center mb-12 " style={{padding:'10px'}}>
+            <h2 className="text-4xl font-bold text-white mb-4 text-center">
+              Choose Your Animal Species
+            </h2>
+            <p className="text-xl text-gray-200">
+              Select the type of animal you want to formulate feed for
+            </p>
+          </div>
+
+          {/* Species Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 " style={{padding:'10px'}}>
+            {speciesData.map((species) => (
+              <div
+                key={species.id}
+                onClick={() => handleSpeciesClick(species.id)}
+                className="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2"
+              >
+                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300 h-full">
+                  {/* Image Container */}
+                  <div className="relative mb-6 overflow-hidden rounded-xl">
+                    <img
+                      src={species.image}
+                      alt={species.name}
+                      className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110"
+                      onError={(e) => {
+                        // Fallback to a placeholder if image fails to load
+                        e.target.src = `https://via.placeholder.com/400x300/4F46E5/FFFFFF?text=${species.name}`;
+                      }}
+                    />
+                    <div className={`absolute inset-0 bg-gradient-to-t ${species.gradient} opacity-0 group-hover:opacity-20 transition-opacity duration-300`}></div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="text-center">
+                    <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-yellow-300 transition-colors duration-300">
+                      {species.name}
+                    </h3>
+                    <p className="text-gray-300 text-sm mb-4">
+                      {species.description}
+                    </p>
+                    
+                    {/* Click Indicator */}
+                    {/* <div className="inline-flex items-center bg-white/20 rounded-full text-white text-sm font-medium group-hover:bg-white/30 transition-all duration-300"
+                    style={{padding:'4px',marginTop:'10px'}}
+                    >
+                      <span>Click to Continue</span>
+                      <svg 
+                        className="ml-2 w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-300" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div> */}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Footer Info */}
+          {/* <div className="text-center mt-16 flex justify-center items-center">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-4xl mx-auto">
+              <h3 className="text-2xl font-bold text-white mb-4">
+                Advanced Feed Formulation
+              </h3>
+              <p className="text-gray-200 text-lg leading-relaxed">
+                Our intelligent feed formulation software provides precise nutritional recommendations 
+                tailored to each species' specific requirements. Select your animal type above to 
+                begin creating optimized feed formulations.
+              </p>
+            </div>
+          </div> */}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SpeciesSelection;
+
 # Opened Files
 ## File Name
 src/App.jsx
 ## File Content
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './Components/Navbar/Navbar';
 import './App.css';
@@ -594,62 +801,114 @@ import Ourceritifications from './Components/Our Certifications/Ourceritificatio
 import Oursoftwareadnwhoweare from './Components/Our Software/Oursoftwareadnwhoweare';
 import Contact from './Components/Contact Form/Contact';
 import OurSoftware from './Components/Login/OurSoftware';
+import Login from './Components/Login/Login';
+import SpeciesSelection from './Components/Login/SpeciesSelection';
+import ProtectedRoute from './Components/ProtectedRoute';
+import Poultry from './Components/Species/Poultry';
+import Cattle from './Components/Species/Cattle';
+import Buffalo from './Components/Species/Buffalo';
+import Sheep from './Components/Species/Sheep';
+import Swine from './Components/Species/Swine';
+import Goat from './Components/Species/Goat';
 
 const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Check authentication status on component mount
-  useEffect(() => {
-    const checkAuthStatus = () => {
-      const isLoggedIn = localStorage.getItem('isLoggedIn');
-      if (isLoggedIn === 'true') {
-        setIsAuthenticated(true);
-      }
-      setIsLoading(false);
-    };
-
-    checkAuthStatus();
-  }, []);
-
-  const handleLogin = () => {
-    setIsAuthenticated(true);
-  };
-
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('username');
+    localStorage.removeItem('userEmail');
     localStorage.removeItem('loginTime');
-    setIsAuthenticated(false);
+    window.location.href = '/login';
   };
 
-  // Show loading state while checking authentication
-  if (isLoading) {
-    return (
-      <ThemeProvider>
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600 dark:text-gray-300">Loading...</p>
-          </div>
-        </div>
-      </ThemeProvider>
-    );
-  }
 
   return (
     <ThemeProvider>
       <Router>
         <Routes>
+          {/* Redirect root to home */}
+          <Route 
+            path="/" 
+            element={<Navigate to="/home" replace />}
+          />
+          
           {/* Login Route */}
           <Route 
+            path="/login" 
+            element={<Login />}
+          />
+          
+          {/* Species Selection Route - Protected */}
+          <Route 
+            path="/species" 
+            element={
+              <ProtectedRoute>
+                <SpeciesSelection />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Species-specific Routes - Protected */}
+          <Route 
+            path="/poultry" 
+            element={
+              <ProtectedRoute>
+                <Poultry />
+              </ProtectedRoute>
+            }
+          />
+          <Route 
+            path="/cattle" 
+            element={
+              <ProtectedRoute>
+                <Cattle />
+              </ProtectedRoute>
+            }
+          />
+          <Route 
+            path="/buffalo" 
+            element={
+              <ProtectedRoute>
+                <Buffalo />
+              </ProtectedRoute>
+            }
+          />
+          <Route 
+            path="/sheep" 
+            element={
+              <ProtectedRoute>
+                <Sheep />
+              </ProtectedRoute>
+            }
+          />
+          <Route 
+            path="/swine" 
+            element={
+              <ProtectedRoute>
+                <Swine />
+              </ProtectedRoute>
+            }
+          />
+          <Route 
+            path="/goat" 
+            element={
+              <ProtectedRoute>
+                <Goat />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* OurSoftware Route - Protected (Legacy) */}
+          <Route 
             path="/oursoftware" 
-            element={<OurSoftware  />}
+            element={
+              <ProtectedRoute>
+                <OurSoftware />
+              </ProtectedRoute>
+            }
           />
           
           {/* Main App Route */}
           <Route 
-            path="/*" 
+            path="/home" 
             element={
          
                 <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 transition-all duration-500">
@@ -696,6 +955,12 @@ const App = () => {
               
             } 
           />
+          
+          {/* Catch-all route - redirect to home */}
+          <Route 
+            path="*" 
+            element={<Navigate to="/home" replace />}
+          />
         </Routes>
       </Router>
     </ThemeProvider>
@@ -703,6 +968,29 @@ const App = () => {
 };
 
 export default App;
+# Opened Files
+## File Name
+src/Components/Species/Poultry.jsx
+## File Content
+import React from 'react';
+import SharedSpeciesForm from './SharedSpeciesForm';
+import { subspeciesOptions, getAnimalTypeOptions, getPhaseOptions } from './speciesData';
+
+const Poultry = () => {
+  return (
+    <SharedSpeciesForm
+      speciesType="poultry"
+      speciesName="Poultry"
+      subspeciesOptions={subspeciesOptions.poultry}
+      getAnimalTypeOptions={getAnimalTypeOptions}
+      getPhaseOptions={getPhaseOptions}
+      backgroundImage="https://images.stockcake.com/public/1/4/d/14d133a4-16ec-46bf-b384-da364125b7ff_large/sunset-farm-hen-stockcake.jpg"
+    />
+  );
+};
+
+export default Poultry;
+
 # Opened Files
 ## File Name
 src/Components/Navbar/Navbar.jsx
@@ -728,7 +1016,7 @@ const Navbar = ({ onLogout }) => {
 
   // Get username from localStorage
   useEffect(() => {
-    const storedUsername = localStorage.getItem('username');
+    const storedUsername = localStorage.getItem('userEmail');
     if (storedUsername) {
       setUsername(storedUsername);
     }
@@ -964,11 +1252,25 @@ const Navbar = ({ onLogout }) => {
               const isActive = link.type === 'scroll' ? activeSection === link.id : window.location.pathname === `/${link.id}`;
               
               if (link.type === 'route') {
+                // Special handling for software route - check authentication
+                const handleSoftwareClick = (e) => {
+                  e.preventDefault();
+                  const isLoggedIn = localStorage.getItem('isLoggedIn');
+                  if (isLoggedIn === 'true') {
+                    // If logged in, go to species selection
+                    window.location.href = '/species';
+                  } else {
+                    // If not logged in, go to login
+                    window.location.href = '/login';
+                  }
+                };
+
                 return (
-                  <Link
+                  <a
                     key={link.name}
                     ref={el => navLinksRef.current[index] = el}
-                    to={`/${link.id}`}
+                    href="#"
+                    onClick={handleSoftwareClick}
                     style={{
                       fontWeight: 'bold',
                       fontSize: '14px',
@@ -1005,7 +1307,7 @@ const Navbar = ({ onLogout }) => {
                         }}
                       />
                     )}
-                  </Link>
+                  </a>
                 );
               }
               
@@ -1066,7 +1368,7 @@ const Navbar = ({ onLogout }) => {
           {/* User Info and Controls */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {/* Username Display */}
-            {username && (
+            {/* {username && (
               <div style={{
                 padding: '8px 16px',
                 borderRadius: '20px',
@@ -1077,7 +1379,7 @@ const Navbar = ({ onLogout }) => {
               }}>
                 Welcome, {username}
               </div>
-            )}
+            )} */}
 
             {/* Theme Toggle */}
             <button
@@ -1114,7 +1416,19 @@ const Navbar = ({ onLogout }) => {
             </button>
 
             {/* Logout Button */}
-      
+            {username && (
+              <button
+                onClick={onLogout}
+                style={{padding: '8px 16px'}}
+                className={` rounded-lg font-medium text-sm transition-all duration-300 ${
+                  isDarkMode 
+                    ? 'bg-red-600 hover:bg-red-700 text-white' 
+                    : 'bg-red-500 hover:bg-red-600 text-white'
+                }`}
+              >
+                Logout
+              </button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -1147,16 +1461,30 @@ const Navbar = ({ onLogout }) => {
                 const isActive = link.type === 'scroll' ? activeSection === link.id : window.location.pathname === `/${link.id}`;
                 
                 if (link.type === 'route') {
+                  // Special handling for software route - check authentication
+                  const handleMobileSoftwareClick = (e) => {
+                    e.preventDefault();
+                    setIsMenuOpen(false);
+                    const isLoggedIn = localStorage.getItem('isLoggedIn');
+                    if (isLoggedIn === 'true') {
+                      // If logged in, go to species selection
+                      window.location.href = '/species';
+                    } else {
+                      // If not logged in, go to login
+                      window.location.href = '/login';
+                    }
+                  };
+
                   return (
-                    <Link
+                    <a
                       key={link.name}
-                      to={`/${link.id}`}
+                      href="#"
+                      onClick={handleMobileSoftwareClick}
                       className={`block py-3 font-bold text-sm tracking-[0.2em] uppercase transition-all duration-300 hover:scale-105 relative ${
                         isActive
                           ? (isDarkMode ? 'text-blue-400' : 'text-blue-600')
                           : (isDarkMode ? 'text-gray-200 hover:text-blue-400' : 'text-gray-700 hover:text-blue-600')
                       }`}
-                      onClick={() => setIsMenuOpen(false)}
                       style={{
                         color: isActive 
                           ? (isDarkMode ? '#60A5FA' : '#3B82F6')
@@ -1179,7 +1507,7 @@ const Navbar = ({ onLogout }) => {
                           }}
                         />
                       )}
-                    </Link>
+                    </a>
                   );
                 }
                 
@@ -1244,4 +1572,45 @@ const Navbar = ({ onLogout }) => {
 };
 
 export default Navbar;
+
+# Opened Files
+## File Name
+src/Components/ProtectedRoute.jsx
+## File Content
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const ProtectedRoute = ({ children }) => {
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const isLoggedIn = localStorage.getItem('isLoggedIn');
+      if (isLoggedIn !== 'true') {
+        navigate('/login');
+      } else {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
+
+  // Show loading while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return children;
+};
+
+export default ProtectedRoute;
 
