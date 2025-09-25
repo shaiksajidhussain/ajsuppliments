@@ -20,6 +20,7 @@ import Buffalo from './Components/Species/Buffalo';
 import Sheep from './Components/Species/Sheep';
 import Swine from './Components/Species/Swine';
 import Goat from './Components/Species/Goat';
+import AdminPanel from './Components/AdminPanel/AdminPanel';
 
 const App = () => {
   const handleLogout = () => {
@@ -112,6 +113,16 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <OurSoftware />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Admin Panel Route - Protected */}
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedRoute>
+                <AdminPanel />
               </ProtectedRoute>
             }
           />

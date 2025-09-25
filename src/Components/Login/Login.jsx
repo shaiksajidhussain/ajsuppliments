@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import apiService from '../../services/api';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -32,20 +33,27 @@ const Login = () => {
     setIsLoading(true);
     setError('');
 
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Validate credentials
-    if (formData.email === staticCredentials.email && formData.password === staticCredentials.password) {
+    try {
+      // Call backend login API
+      const response = await apiService.login(formData.email, formData.password);
+      
       // Store authentication data in localStorage
       localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('userEmail', formData.email);
+      localStorage.setItem('userEmail', response.user.email);
+      localStorage.setItem('userName', response.user.name);
+      localStorage.setItem('userId', response.user.id);
       localStorage.setItem('loginTime', new Date().toISOString());
+      
+      // Store token in localStorage as well (for API calls)
+      if (response.token) {
+        localStorage.setItem('authToken', response.token);
+      }
       
       // Redirect to species selection page
       navigate('/species');
-    } else {
-      setError('Invalid email or password. Please try again.');
+    } catch (error) {
+      console.error('Login error:', error);
+      setError(error.message || 'Login failed. Please try again.');
     }
     
     setIsLoading(false);
@@ -88,6 +96,7 @@ const Login = () => {
                 onChange={handleInputChange}
                 className="w-full  border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
                 placeholder="Enter your email"
+                autoComplete="email"
                 required
                 style={{padding: '8px 16px'}}
               />
@@ -106,6 +115,7 @@ const Login = () => {
                 onChange={handleInputChange}
                 className="w-full  border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
                 placeholder="Enter your password"
+                autoComplete="current-password"
                 required
                 style={{padding: '8px 16px'}}
               />

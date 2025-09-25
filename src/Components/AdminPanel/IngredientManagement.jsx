@@ -1,0 +1,359 @@
+import React, { useState, useEffect } from 'react';
+
+const IngredientManagement = () => {
+  const [ingredients, setIngredients] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [editingIngredient, setEditingIngredient] = useState(null);
+  const [formError, setFormError] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    category: '',
+    crudeProtein: 0,  // Changed from 'protein' to 'crudeProtein'
+    energy: 0,
+    fiber: 0,
+    cost: 0,
+    description: ''
+  });
+
+  const categories = [
+    'Energy Source',
+    'Protein Source',
+    'Vitamin',
+    'Mineral',
+    'Additive',
+    'Binder',
+    'Preservative'
+  ];
+
+  useEffect(() => {
+    fetchIngredients();
+  }, []);
+
+  const fetchIngredients = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('authToken');
+      const response = await fetch('http://localhost:3001/api/ingredients', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch ingredients');
+      }
+
+      const data = await response.json();
+      setIngredients(data.ingredients || []);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching ingredients:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setFormError(null);
+
+    try {
+      const token = localStorage.getItem('authToken');
+      const url = editingIngredient 
+        ? `http://localhost:3001/api/admin/ingredients/${editingIngredient.id}`
+        : 'http://localhost:3001/api/admin/ingredients';
+      
+      const method = editingIngredient ? 'PUT' : 'POST';
+      
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save ingredient');
+      }
+
+      await fetchIngredients();
+      handleCancel();
+    } catch (err) {
+      console.error('Error saving ingredient:', err);
+      setFormError(err.message);
+    }
+  };
+
+  const handleEdit = (ingredient) => {
+    setEditingIngredient(ingredient);
+    setFormData({
+      name: ingredient.name,
+      category: ingredient.category,
+      crudeProtein: ingredient.crudeProtein,
+      energy: ingredient.energy,
+      fiber: ingredient.fiber,
+      cost: ingredient.cost,
+      description: ingredient.description || ''
+    });
+    setShowForm(true);
+    setFormError(null);
+  };
+
+  const handleDelete = async (ingredientId) => {
+    if (!window.confirm('Are you sure you want to delete this ingredient?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`http://localhost:3001/api/admin/ingredients/${ingredientId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete ingredient');
+      }
+
+      await fetchIngredients();
+    } catch (err) {
+      console.error('Error deleting ingredient:', err);
+      setError(err.message);
+    }
+  };
+
+  const handleCancel = () => {
+    setShowForm(false);
+    setEditingIngredient(null);
+    setFormData({
+      name: '',
+      category: '',
+      crudeProtein: 0,
+      energy: 0,
+      fiber: 0,
+      cost: 0,
+      description: ''
+    });
+    setFormError(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="loading-spinner">
+        <div className="spinner"></div>
+        <p style={{ marginLeft: '1rem' }}>Loading...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="error-message">
+        <h3 style={{ margin: '0 0 0.5rem 0', fontWeight: '600' }}>Error</h3>
+        <p style={{ margin: '0 0 1rem 0' }}>{error}</p>
+        <button
+          onClick={fetchIngredients}
+          className="btn btn-danger"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="species-header">
+        <h2 className="species-title">Ingredient Management</h2>
+        <button
+          onClick={() => setShowForm(true)}
+          className="species-refresh-btn"
+        >
+          Add Ingredient
+        </button>
+      </div>
+
+      {showForm && (
+        <div className="species-form">
+          <h3 style={{ fontSize: '1.25rem', fontWeight: '600', color: '#2d3748', margin: '0 0 1rem 0' }}>
+            {editingIngredient ? 'Edit Ingredient' : 'Add New Ingredient'}
+          </h3>
+          
+          {formError && (
+            <div className="error-message">
+              <p>{formError}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="ingredient-form-grid">
+            <div className="form-group">
+              <label className="form-label">Ingredient Name *</label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="form-input"
+                required
+              />
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Category *</label>
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                className="form-input"
+                required
+              >
+                <option value="">Select Category</option>
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Protein (%)</label>
+              <input
+                type="number"
+                step="0.1"
+                value={formData.crudeProtein}
+                onChange={(e) => setFormData({ ...formData, crudeProtein: parseFloat(e.target.value) || 0 })}
+                className="form-input"
+              />
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Energy (kcal/kg)</label>
+              <input
+                type="number"
+                step="0.1"
+                value={formData.energy}
+                onChange={(e) => setFormData({ ...formData, energy: parseFloat(e.target.value) || 0 })}
+                className="form-input"
+              />
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Fiber (%)</label>
+              <input
+                type="number"
+                step="0.1"
+                value={formData.fiber}
+                onChange={(e) => setFormData({ ...formData, fiber: parseFloat(e.target.value) || 0 })}
+                className="form-input"
+              />
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Cost (per kg)</label>
+              <input
+                type="number"
+                step="0.01"
+                value={formData.cost}
+                onChange={(e) => setFormData({ ...formData, cost: parseFloat(e.target.value) || 0 })}
+                className="form-input"
+              />
+            </div>
+            
+            <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+              <label className="form-label">Description</label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                className="form-textarea"
+              />
+            </div>
+            
+            <div className="form-buttons" style={{ gridColumn: '1 / -1' }}>
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn btn-primary"
+              >
+                {loading ? 'Saving...' : editingIngredient ? 'Update' : 'Add Ingredient'}
+              </button>
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="btn btn-secondary"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Ingredients Grid */}
+      <div className="ingredient-grid">
+        {ingredients.map((ingredient) => (
+          <div key={ingredient.id} className="ingredient-item">
+            <div className="ingredient-header">
+              <h3 className="ingredient-name">{ingredient.name}</h3>
+              <span className="ingredient-category">
+                {ingredient.category}
+              </span>
+            </div>
+            
+            <div className="ingredient-details">
+              <div className="ingredient-detail">
+                <span className="ingredient-detail-label">Protein:</span> {ingredient.crudeProtein}%
+              </div>
+              <div className="ingredient-detail">
+                <span className="ingredient-detail-label">Energy:</span> {ingredient.energy} kcal
+              </div>
+              <div className="ingredient-detail">
+                <span className="ingredient-detail-label">Fiber:</span> {ingredient.fiber}%
+              </div>
+              <div className="ingredient-detail">
+                <span className="ingredient-detail-label">Cost:</span> ${ingredient.cost}/kg
+              </div>
+            </div>
+            
+            {ingredient.description && (
+              <p style={{ fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.75rem', lineHeight: '1.4' }}>
+                {ingredient.description}
+              </p>
+            )}
+            
+            <div className="ingredient-actions">
+              <button
+                onClick={() => handleEdit(ingredient)}
+                className="species-item-btn edit"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => handleDelete(ingredient.id)}
+                className="species-item-btn delete"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {ingredients.length === 0 && (
+        <div className="empty-state">
+          <p>No ingredients found. Add your first ingredient to get started.</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default IngredientManagement;

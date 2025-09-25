@@ -26,81 +26,88 @@ const OurSoftware = () => {
     }
   }, []);
 
-  // Species and subspecies options
-  const speciesOptions = [
-    { value: 'poultry', label: 'Poultry' },
-    { value: 'cattle', label: 'Cattle' },
-    { value: 'buffalo', label: 'Buffalo' },
-    { value: 'sheep', label: 'Sheep' },
-    { value: 'swine', label: 'Swine' },
-    { value: 'goat', label: 'Goat' }
-  ];
+  // Dynamic species data from API
+  const [speciesData, setSpeciesData] = useState([]);
+  const [loadingSpecies, setLoadingSpecies] = useState(true);
 
-  const subspeciesOptions = {
-    poultry: [
-      { value: 'chicken', label: 'Chicken' },
-      { value: 'quails', label: 'Quails' },
-      { value: 'turkey', label: 'Turkey' },
-      { value: 'duck', label: 'Duck' }
-    ],
-    cattle: [
-      { value: 'dairy', label: 'Dairy' },
-      { value: 'beef', label: 'Beef' }
-    ],
-    buffalo: [
-      { value: 'dairy_buffalo', label: 'Dairy Buffalo' },
-      { value: 'meat_buffalo', label: 'Meat Buffalo' }
-    ],
-    sheep: [
-      { value: 'wool', label: 'Wool' },
-      { value: 'meat', label: 'Meat' }
-    ],
-    swine: [
-      { value: 'piglet', label: 'Piglet' },
-      { value: 'grower', label: 'Grower' },
-      { value: 'finisher', label: 'Finisher' }
-    ],
-    goat: [
-      { value: 'dairy_goat', label: 'Dairy Goat' },
-      { value: 'meat_goat', label: 'Meat Goat' }
-    ]
-  };
+  // Fetch dynamic species data
+  useEffect(() => {
+    const fetchSpeciesData = async () => {
+      try {
+        setLoadingSpecies(true);
+        const response = await fetch('http://localhost:3001/api/species/hierarchy');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch species data');
+        }
 
-  // Animal Type options based on subspecies and species
-  const getAnimalTypeOptions = (subspecies, species) => {
-    // Special handling for Swine
-    if (species === 'swine') {
-      return [
-        { value: 'marketing_pigs', label: 'Marketing pigs' },
-        { value: 'no_marketing_pigs', label: 'No Marketing pigs' }
-      ];
+        const data = await response.json();
+        setSpeciesData(data.hierarchy);
+      } catch (error) {
+        console.error('Error fetching species data:', error);
+        setError('Failed to load species data');
+      } finally {
+        setLoadingSpecies(false);
+      }
+    };
+
+    fetchSpeciesData();
+  }, []);
+
+  // Convert dynamic data to options format
+  const speciesOptions = speciesData.map(species => ({
+    value: species.id,
+    label: species.name
+  }));
+
+  const subspeciesOptions = {};
+  speciesData.forEach(species => {
+    subspeciesOptions[species.id] = species.subspecies.map(subspecies => ({
+      value: subspecies.id,
+      label: subspecies.name
+    }));
+  });
+
+  // Animal Type options based on subspecies ID (dynamic from API)
+  const getAnimalTypeOptions = (subspeciesId) => {
+    if (!subspeciesId || !speciesData.length) return [];
+
+    // Find the subspecies in the dynamic data
+    for (const species of speciesData) {
+      const subspecies = species.subspecies.find(sub => sub.id === subspeciesId);
+      if (subspecies && subspecies.animalTypes) {
+        return subspecies.animalTypes.map(animalType => ({
+          value: animalType.id,
+          label: animalType.name
+        }));
+      }
     }
 
-    // Default handling for other species
-    switch (subspecies) {
-      case 'quails':
-        return [
-          { value: 'broiler', label: 'Broilers' },
-          { value: 'breeder', label: 'Breeders' }
-        ];
-      case 'turkey':
-      case 'duck':
-        return [
-          { value: 'layer', label: 'Layers' }
-        ];
-      case 'chicken':
-      default:
-        return [
-          { value: 'broiler', label: 'Broilers' },
-          { value: 'layer', label: 'Layers' },
-          { value: 'broilerbreeder', label: 'Broiler Breeders' },
-          { value: 'layerbreeder', label: 'Layer Breeders' }
-        ];
-    }
+    return [];
   };
 
-  // Phase options based on animal type, subspecies, and species
-  const getPhaseOptions = (animalType, subspecies, species) => {
+  // Phase options based on animal type ID (dynamic from API)
+  const getPhaseOptions = (animalTypeId) => {
+    if (!animalTypeId || !speciesData.length) return [];
+
+    // Find the animal type in the dynamic data
+    for (const species of speciesData) {
+      for (const subspecies of species.subspecies) {
+        const animalType = subspecies.animalTypes.find(at => at.id === animalTypeId);
+        if (animalType && animalType.phases) {
+          return animalType.phases.map(phase => ({
+            value: phase.id,
+            label: phase.name
+          }));
+        }
+      }
+    }
+
+    return [];
+  };
+
+  // Legacy function for backward compatibility (not used anymore)
+  const getPhaseOptionsLegacy = (animalType, subspecies, species) => {
     // Special handling for Quails
     if (subspecies === 'quails') {
       switch (animalType) {
@@ -296,47 +303,30 @@ const OurSoftware = () => {
 
     // Clear subspecies and animal type when species changes
     if (name === 'species') {
-      if (value === 'poultry') {
-        // For poultry, reset subspecies and animal type
-        setFormData(prev => ({
-          ...prev,
-          subspecies: '',
-          animalType: 'broiler'
-        }));
-      } else if (value === 'swine') {
-        // For swine, reset subspecies and set default animal type
-        const animalTypeOptions = getAnimalTypeOptions('', value);
-        setFormData(prev => ({
-          ...prev,
-          subspecies: '',
-          animalType: animalTypeOptions[0]?.value || 'marketing_pigs'
-        }));
-      } else {
-        // For other species, clear subspecies and animal type
-        setFormData(prev => ({
-          ...prev,
-          subspecies: '',
-          animalType: 'broiler'
-        }));
-      }
+      setFormData(prev => ({
+        ...prev,
+        subspecies: '',
+        animalType: '',
+        phase: ''
+      }));
     }
 
     // Reset animal type when subspecies changes
     if (name === 'subspecies') {
-      const animalTypeOptions = getAnimalTypeOptions(value, formData.species);
+      const animalTypeOptions = getAnimalTypeOptions(value);
       setFormData(prev => ({
         ...prev,
-        animalType: animalTypeOptions[0]?.value || 'broiler',
-        phase: getPhaseOptions(animalTypeOptions[0]?.value || 'broiler', value, formData.species)[0]?.value || 'starter'
+        animalType: animalTypeOptions[0]?.value || '',
+        phase: ''
       }));
     }
 
     // Reset phase when animal type changes
     if (name === 'animalType') {
-      const phaseOptions = getPhaseOptions(value, formData.subspecies, formData.species);
+      const phaseOptions = getPhaseOptions(value);
       setFormData(prev => ({
         ...prev,
-        phase: phaseOptions[0]?.value || 'starter'
+        phase: phaseOptions[0]?.value || ''
       }));
     }
 
@@ -413,7 +403,12 @@ const OurSoftware = () => {
         </div>
 
         <div className="max-w-7xl mx-auto px-6 py-8" style={{padding: '32px 16px'}} >
-          <form onSubmit={handleSubmit} className="space-y-8">
+          {loadingSpecies ? (
+            <div className="text-center py-8">
+              <div className="text-lg text-gray-600">Loading species data...</div>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-8">
             {/* General Formulation Parameters */}
             <div className="bg-white/95 backdrop-blur-sm rounded-lg p-6 shadow-xl border border-white/20">
             <h2 className="text-5xl font-semibold text-gray-900" style={{padding: '10px 16px'}}>General Formulation Parameters</h2>
@@ -572,11 +567,23 @@ const OurSoftware = () => {
                 <p className="text-sm text-red-600">{error}</p>
               </div>
             )}
+
+            {/* Calculate Button */}
+            <div className="mt-6 flex justify-center">
+              <button
+                style={{padding:'10px 16px'}} 
+                type="submit"
+                className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transform transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300"
+              >
+                Calculate Feed Formulation
+              </button>
+            </div>
           </div>
 
             {/* Select Ingredients Section */}
            
           </form>
+          )}
         </div>
       </div>
     </div>

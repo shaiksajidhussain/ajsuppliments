@@ -313,6 +313,17 @@ const SharedSpeciesForm = ({ speciesType, speciesName, subspeciesOptions, getAni
                 <p className="text-sm text-red-600">{error}</p>
               </div>
             )}
+
+            {/* Calculate Button */}
+            <div className="mt-6 flex justify-center">
+              <button
+                style={{padding:'10px 16px'}} 
+                type="submit"
+                className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transform transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300"
+              >
+                Calculate Feed Formulation
+              </button>
+            </div>
           </div>
 
             {/* Select Ingredients Section */}

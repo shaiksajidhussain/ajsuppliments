@@ -1,17 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { verifyToken } from '../services/api';
 
 const ProtectedRoute = ({ children }) => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkAuth = () => {
-      const isLoggedIn = localStorage.getItem('isLoggedIn');
-      if (isLoggedIn !== 'true') {
-        navigate('/login');
-      } else {
+    const checkAuth = async () => {
+      try {
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        const token = localStorage.getItem('authToken');
+        
+        if (isLoggedIn !== 'true' || !token) {
+          navigate('/login');
+          return;
+        }
+
+        // Verify token with backend
+        const tokenValid = await verifyToken();
+        if (!tokenValid.ok) {
+          // Token is invalid, clear storage and redirect to login
+          localStorage.clear();
+          navigate('/login');
+          return;
+        }
+
         setIsLoading(false);
+      } catch (error) {
+        console.error('Auth check error:', error);
+        localStorage.clear();
+        navigate('/login');
       }
     };
 
