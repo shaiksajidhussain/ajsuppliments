@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 
-const PhaseForm = ({ phases, animalTypeId, onRefresh }) => {
+const PhaseForm = ({ phases, animalTypeId, animalTypes, speciesId, onRefresh }) => {
   const [showForm, setShowForm] = useState(false);
   const [editingPhase, setEditingPhase] = useState(null);
+  const [selectedAnimalTypeForPhase, setSelectedAnimalTypeForPhase] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -14,6 +15,15 @@ const PhaseForm = ({ phases, animalTypeId, onRefresh }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Filter phases based on selected animal type or species
+  const filteredPhases = animalTypeId 
+    ? phases.filter(phase => phase.animalTypeId === animalTypeId)
+    : speciesId 
+    ? phases.filter(phase => phase.speciesId === speciesId)
+    : phases;
+
+  console.log('PhaseForm - animalTypeId:', animalTypeId, 'speciesId:', speciesId, 'phases:', phases, 'filteredPhases:', filteredPhases);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -21,9 +31,24 @@ const PhaseForm = ({ phases, animalTypeId, onRefresh }) => {
 
     try {
       const token = localStorage.getItem('authToken');
-      const url = editingPhase 
-        ? `http://localhost:3001/api/admin/phases/${editingPhase.id}`
-        : `http://localhost:3001/api/admin/animal-types/${animalTypeId}/phases`;
+      
+      let url;
+      
+      if (editingPhase) {
+        // Editing existing phase
+        url = `http://localhost:3001/api/admin/phases/${editingPhase.id}`;
+      } else if (animalTypeId) {
+        // Creating phase under specific animal type
+        url = `http://localhost:3001/api/admin/animal-types/${animalTypeId}/phases`;
+      } else if (selectedAnimalTypeForPhase) {
+        // Creating phase under selected animal type
+        url = `http://localhost:3001/api/admin/animal-types/${selectedAnimalTypeForPhase}/phases`;
+      } else if (speciesId) {
+        // Creating phase directly under species (no subspecies/animal types)
+        url = `http://localhost:3001/api/admin/species/${speciesId}/phases`;
+      } else {
+        throw new Error('Please select an animal type to add the phase to');
+      }
       
       const method = editingPhase ? 'PUT' : 'POST';
 
@@ -45,6 +70,7 @@ const PhaseForm = ({ phases, animalTypeId, onRefresh }) => {
       await onRefresh();
       setShowForm(false);
       setEditingPhase(null);
+      setSelectedAnimalTypeForPhase('');
       setFormData({
         name: '',
         description: '',
@@ -105,6 +131,7 @@ const PhaseForm = ({ phases, animalTypeId, onRefresh }) => {
   const handleCancel = () => {
     setShowForm(false);
     setEditingPhase(null);
+    setSelectedAnimalTypeForPhase('');
     setFormData({
       name: '',
       description: '',
@@ -128,6 +155,32 @@ const PhaseForm = ({ phases, animalTypeId, onRefresh }) => {
         </button>
       </div>
 
+      {!animalTypeId && animalTypes.length > 0 && (
+        <div style={{ 
+          background: '#fef3c7', 
+          border: '1px solid #f59e0b', 
+          borderRadius: '0.375rem', 
+          padding: '0.75rem', 
+          marginBottom: '1rem',
+          color: '#92400e'
+        }}>
+          <strong>Note:</strong> You're viewing all phases for this species. When adding new phases, you'll need to select which animal type to add them to.
+        </div>
+      )}
+      
+      {!animalTypeId && animalTypes.length === 0 && (
+        <div style={{ 
+          background: '#d1fae5', 
+          border: '1px solid #10b981', 
+          borderRadius: '0.375rem', 
+          padding: '0.75rem', 
+          marginBottom: '1rem',
+          color: '#065f46'
+        }}>
+          <strong>Note:</strong> This species doesn't use animal types. Phases will be created directly under the species.
+        </div>
+      )}
+
       {showForm && (
         <div className="species-form">
           <h4 className="species-form h4">
@@ -141,6 +194,26 @@ const PhaseForm = ({ phases, animalTypeId, onRefresh }) => {
           )}
 
           <form onSubmit={handleSubmit}>
+            {!animalTypeId && !editingPhase && animalTypes.length > 0 && (
+              <div className="form-group">
+                <label htmlFor="animalType" className="form-label">Animal Type *</label>
+                <select
+                  id="animalType"
+                  value={selectedAnimalTypeForPhase}
+                  onChange={(e) => setSelectedAnimalTypeForPhase(e.target.value)}
+                  className="form-input"
+                  required
+                >
+                  <option value="">Select Animal Type</option>
+                  {animalTypes.map((animalType) => (
+                    <option key={animalType.id} value={animalType.id}>
+                      {animalType.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             <div className="form-group">
               <label htmlFor="name" className="form-label">Phase Name *</label>
               <input
@@ -234,7 +307,7 @@ const PhaseForm = ({ phases, animalTypeId, onRefresh }) => {
       )}
 
       <div>
-        {phases.map((phase) => (
+        {filteredPhases.map((phase) => (
           <div
             key={phase.id}
             className="species-item"
@@ -283,7 +356,7 @@ const PhaseForm = ({ phases, animalTypeId, onRefresh }) => {
           </div>
         ))}
 
-        {phases.length === 0 && (
+        {filteredPhases.length === 0 && (
           <div className="empty-state">
             <p>No phases found. Create your first phase to get started.</p>
           </div>

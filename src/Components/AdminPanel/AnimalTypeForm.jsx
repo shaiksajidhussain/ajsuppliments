@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 
-const AnimalTypeForm = ({ animalTypes, subspeciesId, onRefresh, onSelect }) => {
+const AnimalTypeForm = ({ animalTypes, subspeciesId, subspecies, speciesId, onRefresh, onSelect }) => {
   const [showForm, setShowForm] = useState(false);
   const [editingAnimalType, setEditingAnimalType] = useState(null);
+  const [selectedSubspeciesForAnimalType, setSelectedSubspeciesForAnimalType] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     description: ''
@@ -18,9 +19,24 @@ const AnimalTypeForm = ({ animalTypes, subspeciesId, onRefresh, onSelect }) => {
 
     try {
       const token = localStorage.getItem('authToken');
-      const url = editingAnimalType 
-        ? `http://localhost:3001/api/admin/animal-types/${editingAnimalType.id}`
-        : `http://localhost:3001/api/admin/subspecies/${subspeciesId}/animal-types`;
+      
+      let url;
+      
+      if (editingAnimalType) {
+        // Editing existing animal type
+        url = `http://localhost:3001/api/admin/animal-types/${editingAnimalType.id}`;
+      } else if (subspeciesId) {
+        // Creating animal type under specific subspecies
+        url = `http://localhost:3001/api/admin/subspecies/${subspeciesId}/animal-types`;
+      } else if (selectedSubspeciesForAnimalType) {
+        // Creating animal type under selected subspecies
+        url = `http://localhost:3001/api/admin/subspecies/${selectedSubspeciesForAnimalType}/animal-types`;
+      } else if (speciesId) {
+        // Creating animal type directly under species (no subspecies)
+        url = `http://localhost:3001/api/admin/species/${speciesId}/animal-types`;
+      } else {
+        throw new Error('Please select a subspecies to add the animal type to');
+      }
       
       const method = editingAnimalType ? 'PUT' : 'POST';
 
@@ -42,6 +58,7 @@ const AnimalTypeForm = ({ animalTypes, subspeciesId, onRefresh, onSelect }) => {
       await onRefresh();
       setShowForm(false);
       setEditingAnimalType(null);
+      setSelectedSubspeciesForAnimalType('');
       setFormData({ name: '', description: '' });
     } catch (err) {
       console.error('Error saving animal type:', err);
@@ -91,6 +108,7 @@ const AnimalTypeForm = ({ animalTypes, subspeciesId, onRefresh, onSelect }) => {
   const handleCancel = () => {
     setShowForm(false);
     setEditingAnimalType(null);
+    setSelectedSubspeciesForAnimalType('');
     setFormData({ name: '', description: '' });
     setError(null);
   };
@@ -112,6 +130,32 @@ const AnimalTypeForm = ({ animalTypes, subspeciesId, onRefresh, onSelect }) => {
         </button>
       </div>
 
+      {!subspeciesId && subspecies.length > 0 && (
+        <div style={{ 
+          background: '#fef3c7', 
+          border: '1px solid #f59e0b', 
+          borderRadius: '0.375rem', 
+          padding: '0.75rem', 
+          marginBottom: '1rem',
+          color: '#92400e'
+        }}>
+          <strong>Note:</strong> You're viewing all animal types for this species. When adding new animal types, you'll need to select which subspecies to add them to.
+        </div>
+      )}
+      
+      {!subspeciesId && subspecies.length === 0 && (
+        <div style={{ 
+          background: '#d1fae5', 
+          border: '1px solid #10b981', 
+          borderRadius: '0.375rem', 
+          padding: '0.75rem', 
+          marginBottom: '1rem',
+          color: '#065f46'
+        }}>
+          <strong>Note:</strong> This species doesn't use subspecies. Animal types will be created directly under the species.
+        </div>
+      )}
+
       {showForm && (
         <div className="species-form">
           <h4 className="species-form h4">
@@ -125,6 +169,26 @@ const AnimalTypeForm = ({ animalTypes, subspeciesId, onRefresh, onSelect }) => {
           )}
 
           <form onSubmit={handleSubmit}>
+            {!subspeciesId && !editingAnimalType && subspecies.length > 0 && (
+              <div className="form-group">
+                <label htmlFor="subspecies" className="form-label">Subspecies *</label>
+                <select
+                  id="subspecies"
+                  value={selectedSubspeciesForAnimalType}
+                  onChange={(e) => setSelectedSubspeciesForAnimalType(e.target.value)}
+                  className="form-input"
+                  required
+                >
+                  <option value="">Select Subspecies</option>
+                  {subspecies.map((subspecies) => (
+                    <option key={subspecies.id} value={subspecies.id}>
+                      {subspecies.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             <div className="form-group">
               <label htmlFor="name" className="form-label">Animal Type Name *</label>
               <input

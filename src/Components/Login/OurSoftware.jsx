@@ -57,7 +57,11 @@ const OurSoftware = () => {
   // Convert dynamic data to options format
   const speciesOptions = speciesData.map(species => ({
     value: species.id,
-    label: species.name
+    label: species.name,
+    notIncluded: species.notIncluded,
+    includeSubspecies: species.includeSubspecies,
+    includeAnimalTypes: species.includeAnimalTypes,
+    includePhases: species.includePhases
   }));
 
   const subspeciesOptions = {};
@@ -67,6 +71,11 @@ const OurSoftware = () => {
       label: subspecies.name
     }));
   });
+
+  // Get current species data
+  const getCurrentSpecies = () => {
+    return speciesData.find(species => species.id === formData.species);
+  };
 
   // Animal Type options based on subspecies ID (dynamic from API)
   const getAnimalTypeOptions = (subspeciesId) => {
@@ -104,6 +113,36 @@ const OurSoftware = () => {
     }
 
     return [];
+  };
+
+  // Get all phases for a species (when subspecies/animal types are not included)
+  const getSpeciesPhaseOptions = (speciesId) => {
+    if (!speciesId || !speciesData.length) return [];
+
+    const species = speciesData.find(s => s.id === speciesId);
+    if (!species) return [];
+
+    // Collect all phases from all subspecies and animal types
+    const allPhases = [];
+    species.subspecies.forEach(subspecies => {
+      subspecies.animalTypes.forEach(animalType => {
+        if (animalType.phases) {
+          animalType.phases.forEach(phase => {
+            allPhases.push({
+              value: phase.id,
+              label: phase.name
+            });
+          });
+        }
+      });
+    });
+
+    // Remove duplicates based on phase name
+    const uniquePhases = allPhases.filter((phase, index, self) => 
+      index === self.findIndex(p => p.label === phase.label)
+    );
+
+    return uniquePhases;
   };
 
   // Legacy function for backward compatibility (not used anymore)
@@ -303,6 +342,7 @@ const OurSoftware = () => {
 
     // Clear subspecies and animal type when species changes
     if (name === 'species') {
+      const currentSpecies = speciesData.find(species => species.id === value);
       setFormData(prev => ({
         ...prev,
         subspecies: '',
@@ -450,8 +490,8 @@ const OurSoftware = () => {
                 </select>
               </div>
 
-              {/* Subspecies - Only show for Poultry */}
-              {formData.species === 'poultry' && (
+              {/* Subspecies - Show if species includes subspecies */}
+              {formData.species && getCurrentSpecies()?.includeSubspecies && subspeciesOptions[formData.species] && subspeciesOptions[formData.species].length > 0 && (
                 <div>
                   <label htmlFor="subspecies" className="block text-sm font-medium text-gray-700 mb-2">
                     Subspecies:
@@ -463,7 +503,8 @@ const OurSoftware = () => {
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                   >
-                    {subspeciesOptions.poultry.map((option) => (
+                    <option value="">Select Subspecies</option>
+                    {subspeciesOptions[formData.species].map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
                       </option>
@@ -472,8 +513,8 @@ const OurSoftware = () => {
                 </div>
               )}
 
-              {/* Animal Type - Show for Poultry and Swine */}
-              {(formData.species === 'poultry' || formData.species === 'swine') && (
+              {/* Animal Type - Show if species includes animal types and subspecies has animal types */}
+              {formData.subspecies && getCurrentSpecies()?.includeAnimalTypes && getAnimalTypeOptions(formData.subspecies).length > 0 && (
                 <div>
                   <label htmlFor="animalType" className="block text-sm font-medium text-gray-700 mb-2">
                     Animal Type:
@@ -485,34 +526,54 @@ const OurSoftware = () => {
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                   >
-                  {getAnimalTypeOptions(formData.subspecies, formData.species).map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
+                    <option value="">Select Animal Type</option>
+                    {getAnimalTypeOptions(formData.subspecies).map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
               )}
 
-              {/* Phase */}
-              <div>
-                <label htmlFor="phase" className="block text-sm font-medium text-gray-700 mb-2">
-                  Phase:
-                </label>
-                <select
-                  id="phase"
-                  name="phase"
-                  value={formData.phase}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
-                >
-                  {getPhaseOptions(formData.animalType, formData.subspecies, formData.species).map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* Phase - Show if species includes phases */}
+              {getCurrentSpecies()?.includePhases && (
+                (formData.animalType && getPhaseOptions(formData.animalType).length > 0) || 
+                (formData.species && !getCurrentSpecies()?.includeSubspecies && !getCurrentSpecies()?.includeAnimalTypes && getSpeciesPhaseOptions(formData.species).length > 0) ||
+                (formData.species && !formData.subspecies && !formData.animalType)
+              ) ? (
+                <div>
+                  <label htmlFor="phase" className="block text-sm font-medium text-gray-700 mb-2">
+                    Phase:
+                  </label>
+                  <select
+                    id="phase"
+                    name="phase"
+                    value={formData.phase}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
+                  >
+                    <option value="">Select Phase</option>
+                    {formData.animalType ? 
+                      // Show phases for specific animal type
+                      getPhaseOptions(formData.animalType).map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      )) :
+                      // Show all phases for species when subspecies/animal types are not included
+                      getSpeciesPhaseOptions(formData.species).length > 0 ?
+                        getSpeciesPhaseOptions(formData.species).map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        )) :
+                        // Fallback to general phase
+                        <option value="general">General</option>
+                    }
+                  </select>
+                </div>
+              ) : null}
 
               {/* Crude Protein */}
               <div>

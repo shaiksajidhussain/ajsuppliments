@@ -44,7 +44,11 @@ const SpeciesManagement = () => {
       const speciesData = data.hierarchy.map(species => ({
         id: species.id,
         name: species.name,
-        description: species.description
+        description: species.description,
+        notIncluded: species.notIncluded,
+        includeSubspecies: species.includeSubspecies,
+        includeAnimalTypes: species.includeAnimalTypes,
+        includePhases: species.includePhases
       }));
       setSpecies(speciesData);
     } catch (error) {
@@ -55,10 +59,6 @@ const SpeciesManagement = () => {
     }
   };
 
-  const fetchSpecies = async () => {
-    // This function is now handled by fetchHierarchyData
-    await fetchHierarchyData();
-  };
 
   const fetchSubspecies = async (speciesId) => {
     try {
@@ -100,16 +100,33 @@ const SpeciesManagement = () => {
 
   const fetchPhases = async (animalTypeId) => {
     try {
+      console.log('fetchPhases called with animalTypeId:', animalTypeId);
+      console.log('hierarchyData:', hierarchyData);
+      
       // Find the animal type in the hierarchy data
       for (const species of hierarchyData) {
+        // Check direct animal types first (when subspecies are skipped)
+        if (species.directAnimalTypes && species.directAnimalTypes.length > 0) {
+          console.log('Checking directAnimalTypes for species:', species.name, species.directAnimalTypes);
+          const animalType = species.directAnimalTypes.find(at => at.id === animalTypeId);
+          if (animalType && animalType.phases) {
+            console.log('Found phases in directAnimalTypes:', animalType.phases);
+            setPhases(animalType.phases);
+            return;
+          }
+        }
+        
+        // Check traditional hierarchy (subspecies -> animal types)
         for (const subspecies of species.subspecies) {
           const animalType = subspecies.animalTypes.find(at => at.id === animalTypeId);
           if (animalType && animalType.phases) {
+            console.log('Found phases in traditional hierarchy:', animalType.phases);
             setPhases(animalType.phases);
             return;
           }
         }
       }
+      console.log('No phases found for animalTypeId:', animalTypeId);
       setPhases([]);
     } catch (error) {
       console.error('Error fetching phases:', error);
@@ -124,8 +141,124 @@ const SpeciesManagement = () => {
     setSubspecies([]);
     setAnimalTypes([]);
     setPhases([]);
-    fetchSubspecies(speciesId);
-    setActiveTab('subspecies');
+    
+    // Find the selected species to check inclusion settings
+    const selectedSpeciesData = hierarchyData.find(species => species.id === speciesId);
+    
+    if (selectedSpeciesData) {
+      // Always fetch subspecies data first
+      fetchSubspecies(speciesId);
+      
+      // Determine which tab to navigate to based on inclusion settings
+      if (selectedSpeciesData.includeSubspecies) {
+        setActiveTab('subspecies');
+      } else if (selectedSpeciesData.includeAnimalTypes) {
+        // Skip subspecies tab, go directly to animal types
+        // First check for direct animal types (when subspecies are skipped)
+        if (selectedSpeciesData.directAnimalTypes && selectedSpeciesData.directAnimalTypes.length > 0) {
+          setAnimalTypes(selectedSpeciesData.directAnimalTypes);
+        } else {
+          // Fallback to traditional hierarchy
+          const allAnimalTypes = [];
+          selectedSpeciesData.subspecies.forEach(subspecies => {
+            if (subspecies.animalTypes) {
+              allAnimalTypes.push(...subspecies.animalTypes);
+            }
+          });
+          setAnimalTypes(allAnimalTypes);
+        }
+        setActiveTab('animal-types');
+      } else if (selectedSpeciesData.includePhases) {
+        // Skip subspecies and animal types tabs, go directly to phases
+        // First check for direct phases (when both subspecies and animal types are skipped)
+        if (selectedSpeciesData.directPhases && selectedSpeciesData.directPhases.length > 0) {
+          setPhases(selectedSpeciesData.directPhases);
+        } else {
+          // Fallback to traditional hierarchy
+          const allPhases = [];
+          selectedSpeciesData.subspecies.forEach(subspecies => {
+            subspecies.animalTypes.forEach(animalType => {
+              if (animalType.phases) {
+                allPhases.push(...animalType.phases);
+              }
+            });
+          });
+          setPhases(allPhases);
+        }
+        setActiveTab('phases');
+      } else {
+        // No inclusions enabled, stay on species tab
+        setActiveTab('species');
+      }
+    } else {
+      // Fallback to old behavior
+      fetchSubspecies(speciesId);
+      setActiveTab('subspecies');
+    }
+  };
+
+  // Helper function to populate data for a specific tab
+  const populateTabData = (speciesData, tab) => {
+    if (tab === 'animal-types') {
+      // First check for direct animal types (when subspecies are skipped)
+      if (speciesData.directAnimalTypes && speciesData.directAnimalTypes.length > 0) {
+        setAnimalTypes(speciesData.directAnimalTypes);
+      } else {
+        // Fallback to traditional hierarchy
+        const allAnimalTypes = [];
+        speciesData.subspecies.forEach(subspecies => {
+          if (subspecies.animalTypes) {
+            allAnimalTypes.push(...subspecies.animalTypes);
+          }
+        });
+        setAnimalTypes(allAnimalTypes);
+      }
+    } else if (tab === 'phases') {
+      const allPhases = [];
+      
+      // First check for direct phases (when both subspecies and animal types are skipped)
+      if (speciesData.directPhases && speciesData.directPhases.length > 0) {
+        allPhases.push(...speciesData.directPhases);
+      }
+      
+      // Check for phases in direct animal types (when subspecies are skipped but animal types exist)
+      if (speciesData.directAnimalTypes && speciesData.directAnimalTypes.length > 0) {
+        speciesData.directAnimalTypes.forEach(animalType => {
+          if (animalType.phases && animalType.phases.length > 0) {
+            allPhases.push(...animalType.phases);
+          }
+        });
+      }
+      
+      // Check traditional hierarchy (subspecies -> animal types -> phases)
+      if (speciesData.subspecies && speciesData.subspecies.length > 0) {
+        speciesData.subspecies.forEach(subspecies => {
+          if (subspecies.animalTypes) {
+            subspecies.animalTypes.forEach(animalType => {
+              if (animalType.phases && animalType.phases.length > 0) {
+                allPhases.push(...animalType.phases);
+              }
+            });
+          }
+        });
+      }
+      
+      console.log('Populating phases for tab:', tab, 'Found phases:', allPhases);
+      setPhases(allPhases);
+    }
+  };
+
+  // Handle manual tab navigation
+  const handleTabClick = (tab) => {
+    setActiveTab(tab);
+    
+    // If a species is selected, populate the data for the clicked tab
+    if (selectedSpecies) {
+      const selectedSpeciesData = hierarchyData.find(species => species.id === selectedSpecies);
+      if (selectedSpeciesData) {
+        populateTabData(selectedSpeciesData, tab);
+      }
+    }
   };
 
   const handleSubspeciesSelect = (subspeciesId) => {
@@ -180,18 +313,35 @@ const SpeciesManagement = () => {
       const speciesData = data.hierarchy.map(species => ({
         id: species.id,
         name: species.name,
-        description: species.description
+        description: species.description,
+        notIncluded: species.notIncluded,
+        includeSubspecies: species.includeSubspecies,
+        includeAnimalTypes: species.includeAnimalTypes,
+        includePhases: species.includePhases
       }));
       setSpecies(speciesData);
 
       // Re-fetch current selections with the fresh data
       if (selectedSpecies) {
-        // Find the subspecies in the fresh data
+        // Find the species in the fresh data
         for (const species of data.hierarchy) {
           if (species.id === selectedSpecies) {
             setSubspecies(species.subspecies || []);
             
-            if (selectedSubspecies) {
+            // Handle direct animal types (when subspecies are skipped)
+            if (species.directAnimalTypes && species.directAnimalTypes.length > 0) {
+              setAnimalTypes(species.directAnimalTypes);
+              
+              if (selectedAnimalType) {
+                // Find the phases for the selected direct animal type
+                const animalType = species.directAnimalTypes.find(at => at.id === selectedAnimalType);
+                if (animalType && animalType.phases) {
+                  setPhases(animalType.phases);
+                }
+              }
+            }
+            // Handle traditional hierarchy (when subspecies exist)
+            else if (selectedSubspecies) {
               // Find the animal types for the selected subspecies
               const subspecies = species.subspecies.find(sub => sub.id === selectedSubspecies);
               if (subspecies && subspecies.animalTypes) {
@@ -206,6 +356,11 @@ const SpeciesManagement = () => {
                 }
               }
             }
+            
+            // Handle direct phases (when both subspecies and animal types are skipped)
+            if (species.directPhases && species.directPhases.length > 0) {
+              setPhases(species.directPhases);
+            }
             break;
           }
         }
@@ -216,6 +371,12 @@ const SpeciesManagement = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Get inclusion settings for currently selected species
+  const getCurrentSpeciesInclusionSettings = () => {
+    if (!selectedSpecies || !hierarchyData.length) return null;
+    return hierarchyData.find(species => species.id === selectedSpecies);
   };
 
   if (loading) {
@@ -257,28 +418,28 @@ const SpeciesManagement = () => {
       {/* Navigation Tabs */}
       <div className="species-nav">
         <button
-          onClick={() => setActiveTab('species')}
+          onClick={() => handleTabClick('species')}
           className={`species-nav-btn ${activeTab === 'species' ? 'active' : ''}`}
         >
           Species
         </button>
         <button
-          onClick={() => setActiveTab('subspecies')}
+          onClick={() => handleTabClick('subspecies')}
           disabled={!selectedSpecies}
           className={`species-nav-btn ${activeTab === 'subspecies' ? 'active' : ''}`}
         >
           Subspecies
         </button>
         <button
-          onClick={() => setActiveTab('animal-types')}
-          disabled={!selectedSubspecies}
+          onClick={() => handleTabClick('animal-types')}
+          disabled={!selectedSpecies || !getCurrentSpeciesInclusionSettings()?.includeAnimalTypes}
           className={`species-nav-btn ${activeTab === 'animal-types' ? 'active' : ''}`}
         >
           Animal Types
         </button>
         <button
-          onClick={() => setActiveTab('phases')}
-          disabled={!selectedAnimalType}
+          onClick={() => handleTabClick('phases')}
+          disabled={!selectedSpecies || !getCurrentSpeciesInclusionSettings()?.includePhases}
           className={`species-nav-btn ${activeTab === 'phases' ? 'active' : ''}`}
         >
           Phases
@@ -304,18 +465,22 @@ const SpeciesManagement = () => {
               onSelect={handleSubspeciesSelect}
             />
           )}
-          {activeTab === 'animal-types' && selectedSubspecies && (
+          {activeTab === 'animal-types' && (selectedSubspecies || animalTypes.length > 0 || (selectedSpecies && !getCurrentSpeciesInclusionSettings()?.includeSubspecies)) && (
             <AnimalTypeForm
               animalTypes={animalTypes}
               subspeciesId={selectedSubspecies}
+              subspecies={subspecies}
+              speciesId={selectedSpecies}
               onRefresh={handleSmartRefresh}
               onSelect={handleAnimalTypeSelect}
             />
           )}
-          {activeTab === 'phases' && selectedAnimalType && (
+          {activeTab === 'phases' && (selectedAnimalType || phases.length > 0 || (selectedSpecies && !getCurrentSpeciesInclusionSettings()?.includeSubspecies && !getCurrentSpeciesInclusionSettings()?.includeAnimalTypes)) && (
             <PhaseForm
               phases={phases}
               animalTypeId={selectedAnimalType}
+              animalTypes={animalTypes}
+              speciesId={selectedSpecies}
               onRefresh={handleSmartRefresh}
             />
           )}

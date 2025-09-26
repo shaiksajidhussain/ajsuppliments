@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const SharedSpeciesForm = ({ speciesType, speciesName, subspeciesOptions, getAnimalTypeOptions, getPhaseOptions, backgroundImage }) => {
+const SharedSpeciesForm = ({ 
+  speciesType, 
+  speciesName, 
+  subspeciesOptions, 
+  getAnimalTypeOptions, 
+  getPhaseOptions, 
+  getSpeciesPhaseOptions,
+  speciesInclusionSettings,
+  targetSpecies,
+  backgroundImage 
+}) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     feedBatchWeight: '100',
@@ -212,8 +222,8 @@ const SharedSpeciesForm = ({ speciesType, speciesName, subspeciesOptions, getAni
                 </select>
               </div>
 
-              {/* Subspecies - Only show for Poultry */}
-              {formData.species === 'poultry' && subspeciesOptions && (
+              {/* Subspecies - Show if species includes subspecies */}
+              {speciesInclusionSettings?.includeSubspecies && subspeciesOptions && subspeciesOptions.length > 0 && (
                 <div>
                   <label htmlFor="subspecies" className="block text-sm font-medium text-gray-700 mb-2">
                     Subspecies:
@@ -225,6 +235,7 @@ const SharedSpeciesForm = ({ speciesType, speciesName, subspeciesOptions, getAni
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                   >
+                    <option value="">Select Subspecies</option>
                     {subspeciesOptions.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
@@ -234,8 +245,24 @@ const SharedSpeciesForm = ({ speciesType, speciesName, subspeciesOptions, getAni
                 </div>
               )}
 
-              {/* Animal Type - Show for Poultry and Swine */}
-              {(formData.species === 'poultry' || formData.species === 'swine') && (
+              {/* Animal Type - Show if species includes animal types */}
+              {(() => {
+                // For direct animal types (when subspecies are skipped), check if there are direct animal types
+                const hasDirectAnimalTypes = targetSpecies && targetSpecies.directAnimalTypes && targetSpecies.directAnimalTypes.length > 0;
+                // For traditional hierarchy, check if subspecies exists and has animal types
+                const hasSubspeciesAnimalTypes = formData.subspecies && getAnimalTypeOptions(formData.subspecies).length > 0;
+                
+                const shouldShowAnimalType = speciesInclusionSettings?.includeAnimalTypes && (hasDirectAnimalTypes || hasSubspeciesAnimalTypes);
+                
+                console.log('=== ANIMAL TYPE SECTION RENDERING CHECK ===');
+                console.log('speciesInclusionSettings?.includeAnimalTypes:', speciesInclusionSettings?.includeAnimalTypes);
+                console.log('hasDirectAnimalTypes:', hasDirectAnimalTypes);
+                console.log('hasSubspeciesAnimalTypes:', hasSubspeciesAnimalTypes);
+                console.log('formData.subspecies:', formData.subspecies);
+                console.log('getAnimalTypeOptions(formData.subspecies):', getAnimalTypeOptions(formData.subspecies));
+                console.log('shouldShowAnimalType:', shouldShowAnimalType);
+                return shouldShowAnimalType;
+              })() && (
                 <div>
                   <label htmlFor="animalType" className="block text-sm font-medium text-gray-700 mb-2">
                     Animal Type:
@@ -247,34 +274,65 @@ const SharedSpeciesForm = ({ speciesType, speciesName, subspeciesOptions, getAni
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                   >
-                  {getAnimalTypeOptions(formData.subspecies, formData.species).map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
+                    <option value="">Select Animal Type</option>
+                    {(() => {
+                      // For direct animal types (when subspecies are skipped)
+                      if (targetSpecies && targetSpecies.directAnimalTypes && targetSpecies.directAnimalTypes.length > 0) {
+                        return targetSpecies.directAnimalTypes.map((animalType) => (
+                          <option key={animalType.id} value={animalType.id}>
+                            {animalType.name}
+                          </option>
+                        ));
+                      }
+                      // For traditional hierarchy (when subspecies exist)
+                      return getAnimalTypeOptions(formData.subspecies).map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ));
+                    })()}
                   </select>
                 </div>
               )}
 
-              {/* Phase */}
-              <div>
-                <label htmlFor="phase" className="block text-sm font-medium text-gray-700 mb-2">
-                  Phase:
-                </label>
-                <select
-                  id="phase"
-                  name="phase"
-                  value={formData.phase}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
-                >
-                  {getPhaseOptions(formData.animalType, formData.subspecies, formData.species).map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* Phase - Show if species includes phases or animal types (for phases under animal types) */}
+              {(speciesInclusionSettings?.includePhases || speciesInclusionSettings?.includeAnimalTypes) && (
+                <div>
+                  <label htmlFor="phase" className="block text-sm font-medium text-gray-700 mb-2">
+                    Phase:
+                  </label>
+                  <select
+                    id="phase"
+                    name="phase"
+                    value={formData.phase}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
+                  >
+                    <option value="">Select Phase</option>
+                    {formData.animalType ? 
+                      // Show phases for specific animal type
+                      getPhaseOptions(formData.animalType).map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      )) :
+                      // Show all phases for species when subspecies/animal types are not included
+                      getSpeciesPhaseOptions && getSpeciesPhaseOptions(formData.species).length > 0 ?
+                        getSpeciesPhaseOptions(formData.species).map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        )) :
+                        // Fallback to legacy phase options
+                        getPhaseOptions(formData.animalType, formData.subspecies, formData.species).map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))
+                    }
+                  </select>
+                </div>
+              )}
 
               {/* Crude Protein */}
               <div>
