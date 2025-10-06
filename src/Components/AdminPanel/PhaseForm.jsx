@@ -7,10 +7,12 @@ const PhaseForm = ({ phases, animalTypeId, animalTypes, speciesId, onRefresh }) 
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    minProtein: '',
-    maxProtein: '',
-    minEnergy: '',
-    maxEnergy: ''
+    crudeProtein: '',
+    meKcalPerKg: '',
+    calcium: '',
+    availablePhosphorus: '',
+    lysine: '',
+    methionine: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -74,10 +76,12 @@ const PhaseForm = ({ phases, animalTypeId, animalTypes, speciesId, onRefresh }) 
       setFormData({
         name: '',
         description: '',
-        minProtein: '',
-        maxProtein: '',
-        minEnergy: '',
-        maxEnergy: ''
+        crudeProtein: '',
+        meKcalPerKg: '',
+        calcium: '',
+        availablePhosphorus: '',
+        lysine: '',
+        methionine: ''
       });
     } catch (err) {
       console.error('Error saving phase:', err);
@@ -92,10 +96,12 @@ const PhaseForm = ({ phases, animalTypeId, animalTypes, speciesId, onRefresh }) 
     setFormData({
       name: phase.name,
       description: phase.description || '',
-      minProtein: phase.minProtein || '',
-      maxProtein: phase.maxProtein || '',
-      minEnergy: phase.minEnergy || '',
-      maxEnergy: phase.maxEnergy || ''
+      crudeProtein: phase.crudeProtein || '',
+      meKcalPerKg: phase.meKcalPerKg || '',
+      calcium: phase.calcium || '',
+      availablePhosphorus: phase.availablePhosphorus || '',
+      lysine: phase.lysine || '',
+      methionine: phase.methionine || ''
     });
     setShowForm(true);
     setError(null);
@@ -135,10 +141,12 @@ const PhaseForm = ({ phases, animalTypeId, animalTypes, speciesId, onRefresh }) 
     setFormData({
       name: '',
       description: '',
-      minProtein: '',
-      maxProtein: '',
-      minEnergy: '',
-      maxEnergy: ''
+      crudeProtein: '',
+      meKcalPerKg: '',
+      calcium: '',
+      availablePhosphorus: '',
+      lysine: '',
+      methionine: ''
     });
     setError(null);
   };
@@ -238,49 +246,73 @@ const PhaseForm = ({ phases, animalTypeId, animalTypes, speciesId, onRefresh }) 
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
               <div className="form-group">
-                <label htmlFor="minProtein" className="form-label">Min Protein (%)</label>
+                <label htmlFor="crudeProtein" className="form-label">Crude Protein (%)</label>
                 <input
                   type="number"
                   step="0.1"
-                  id="minProtein"
-                  value={formData.minProtein}
-                  onChange={(e) => setFormData({ ...formData, minProtein: e.target.value })}
+                  id="crudeProtein"
+                  value={formData.crudeProtein}
+                  onChange={(e) => setFormData({ ...formData, crudeProtein: e.target.value })}
                   className="form-input"
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="maxProtein" className="form-label">Max Protein (%)</label>
+                <label htmlFor="meKcalPerKg" className="form-label">ME Kcal/kg</label>
                 <input
                   type="number"
                   step="0.1"
-                  id="maxProtein"
-                  value={formData.maxProtein}
-                  onChange={(e) => setFormData({ ...formData, maxProtein: e.target.value })}
+                  id="meKcalPerKg"
+                  value={formData.meKcalPerKg}
+                  onChange={(e) => setFormData({ ...formData, meKcalPerKg: e.target.value })}
                   className="form-input"
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="minEnergy" className="form-label">Min Energy (kcal/kg)</label>
+                <label htmlFor="calcium" className="form-label">Calcium (%)</label>
                 <input
                   type="number"
-                  step="0.1"
-                  id="minEnergy"
-                  value={formData.minEnergy}
-                  onChange={(e) => setFormData({ ...formData, minEnergy: e.target.value })}
+                  step="0.01"
+                  id="calcium"
+                  value={formData.calcium}
+                  onChange={(e) => setFormData({ ...formData, calcium: e.target.value })}
                   className="form-input"
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="maxEnergy" className="form-label">Max Energy (kcal/kg)</label>
+                <label htmlFor="availablePhosphorus" className="form-label">Available Phosphorus (%)</label>
                 <input
                   type="number"
-                  step="0.1"
-                  id="maxEnergy"
-                  value={formData.maxEnergy}
-                  onChange={(e) => setFormData({ ...formData, maxEnergy: e.target.value })}
+                  step="0.01"
+                  id="availablePhosphorus"
+                  value={formData.availablePhosphorus}
+                  onChange={(e) => setFormData({ ...formData, availablePhosphorus: e.target.value })}
+                  className="form-input"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="lysine" className="form-label">Lysine (%)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  id="lysine"
+                  value={formData.lysine}
+                  onChange={(e) => setFormData({ ...formData, lysine: e.target.value })}
+                  className="form-input"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="methionine" className="form-label">Methionine (%)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  id="methionine"
+                  value={formData.methionine}
+                  onChange={(e) => setFormData({ ...formData, methionine: e.target.value })}
                   className="form-input"
                 />
               </div>
@@ -318,21 +350,27 @@ const PhaseForm = ({ phases, animalTypeId, animalTypes, speciesId, onRefresh }) 
                 {phase.description && (
                   <p className="species-item p">{phase.description}</p>
                 )}
-                {(phase.minProtein || phase.maxProtein || phase.minEnergy || phase.maxEnergy) && (
+                {(phase.crudeProtein || phase.meKcalPerKg || phase.calcium || phase.availablePhosphorus || phase.lysine || phase.methionine) && (
                   <div className="nutritional-requirements">
-                    <h4>Nutritional Requirements</h4>
+                    <h4>Nutrient Requirements</h4>
                     <div className="nutritional-grid">
-                      {phase.minProtein && <div className="nutritional-item">
-                        <span className="nutritional-label">Min Protein:</span> {phase.minProtein}%
+                      {phase.crudeProtein && <div className="nutritional-item">
+                        <span className="nutritional-label">Crude Protein:</span> {phase.crudeProtein}%
                       </div>}
-                      {phase.maxProtein && <div className="nutritional-item">
-                        <span className="nutritional-label">Max Protein:</span> {phase.maxProtein}%
+                      {phase.meKcalPerKg && <div className="nutritional-item">
+                        <span className="nutritional-label">ME Kcal/kg:</span> {phase.meKcalPerKg}
                       </div>}
-                      {phase.minEnergy && <div className="nutritional-item">
-                        <span className="nutritional-label">Min Energy:</span> {phase.minEnergy} kcal/kg
+                      {phase.calcium && <div className="nutritional-item">
+                        <span className="nutritional-label">Calcium:</span> {phase.calcium}%
                       </div>}
-                      {phase.maxEnergy && <div className="nutritional-item">
-                        <span className="nutritional-label">Max Energy:</span> {phase.maxEnergy} kcal/kg
+                      {phase.availablePhosphorus && <div className="nutritional-item">
+                        <span className="nutritional-label">Available Phosphorus:</span> {phase.availablePhosphorus}%
+                      </div>}
+                      {phase.lysine && <div className="nutritional-item">
+                        <span className="nutritional-label">Lysine:</span> {phase.lysine}%
+                      </div>}
+                      {phase.methionine && <div className="nutritional-item">
+                        <span className="nutritional-label">Methionine:</span> {phase.methionine}%
                       </div>}
                     </div>
                   </div>

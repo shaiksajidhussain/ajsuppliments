@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import IngredientSelection from '../Login/IngredientSelection';
 
 const SharedSpeciesForm = ({ 
   speciesType, 
@@ -25,6 +26,7 @@ const SharedSpeciesForm = ({
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedIngredients, setSelectedIngredients] = useState([]);
 
   // Check authentication on component mount
   useEffect(() => {
@@ -135,6 +137,7 @@ const SharedSpeciesForm = ({
 
     // Here you can add your form submission logic
     console.log('Form submitted:', formData);
+    console.log('Selected ingredients:', selectedIngredients);
   };
 
   return (
@@ -385,6 +388,12 @@ const SharedSpeciesForm = ({
           </div>
 
             {/* Select Ingredients Section */}
+            <IngredientSelection style={{padding: '32px 16px'}}
+              onIngredientsChange={(ingredients) => {
+                setSelectedIngredients(ingredients);
+                console.log('Selected ingredients:', ingredients);
+              }}
+            />
            
           </form>
         </div>

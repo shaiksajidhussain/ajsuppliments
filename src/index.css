@@ -1,5 +1,4 @@
 @import "tailwindcss";
-
 /* Dark mode support */
 @layer base {
   :root {

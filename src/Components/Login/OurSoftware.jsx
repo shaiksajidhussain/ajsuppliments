@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import IngredientSelection from './IngredientSelection';
 
 const OurSoftware = () => {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ const OurSoftware = () => {
   const [error, setError] = useState('');
 
   // Pre-populate species from localStorage
-  useEffect(() => {
+  useEffect(() => { 
     const selectedSpecies = localStorage.getItem('selectedSpecies');
     if (selectedSpecies) {
       setFormData(prev => ({
@@ -29,6 +30,7 @@ const OurSoftware = () => {
   // Dynamic species data from API
   const [speciesData, setSpeciesData] = useState([]);
   const [loadingSpecies, setLoadingSpecies] = useState(true);
+  const [selectedIngredients, setSelectedIngredients] = useState([]);
 
   // Fetch dynamic species data
   useEffect(() => {
@@ -146,6 +148,7 @@ const OurSoftware = () => {
   };
 
   // Legacy function for backward compatibility (not used anymore)
+  // eslint-disable-next-line no-unused-vars
   const getPhaseOptionsLegacy = (animalType, subspecies, species) => {
     // Special handling for Quails
     if (subspecies === 'quails') {
@@ -342,6 +345,7 @@ const OurSoftware = () => {
 
     // Clear subspecies and animal type when species changes
     if (name === 'species') {
+      // eslint-disable-next-line no-unused-vars
       const currentSpecies = speciesData.find(species => species.id === value);
       setFormData(prev => ({
         ...prev,
@@ -391,6 +395,8 @@ const OurSoftware = () => {
       return;
     }
 
+    // Log selected ingredients for debugging
+    console.log('Form submitted with selected ingredients:', selectedIngredients);
    
   };
 
@@ -642,6 +648,12 @@ const OurSoftware = () => {
           </div>
 
             {/* Select Ingredients Section */}
+            <IngredientSelection  className='mt-10'
+              onIngredientsChange={(ingredients) => {
+                setSelectedIngredients(ingredients);
+                console.log('Selected ingredients:', ingredients);
+              }}
+            />
            
           </form>
           )}

@@ -13,18 +13,25 @@ const IngredientManagement = () => {
     crudeProtein: 0,  // Changed from 'protein' to 'crudeProtein'
     energy: 0,
     fiber: 0,
+    lysine: 0,
+    methionine: 0,
+    calcium: 0,
+    phosphorus: 0,
+    salt: 0.3,  // Default value
     cost: 0,
+    premix: 1,  // Default value
     description: ''
   });
 
   const categories = [
     'Energy Source',
     'Protein Source',
-    'Vitamin',
-    'Mineral',
-    'Additive',
-    'Binder',
-    'Preservative'
+    'Medium Source',
+    // 'Vitamin',
+    // 'Mineral',
+    // 'Additive',
+    // 'Binder',
+    // 'Preservative'
   ];
 
   useEffect(() => {
@@ -99,7 +106,13 @@ const IngredientManagement = () => {
       crudeProtein: ingredient.crudeProtein,
       energy: ingredient.energy,
       fiber: ingredient.fiber,
+      lysine: ingredient.lysine || 0,
+      methionine: ingredient.methionine || 0,
+      calcium: ingredient.calcium || 0,
+      phosphorus: ingredient.phosphorus || 0,
+      salt: ingredient.salt || 0.3,
       cost: ingredient.cost,
+      premix: ingredient.premix || 1,
       description: ingredient.description || ''
     });
     setShowForm(true);
@@ -141,7 +154,13 @@ const IngredientManagement = () => {
       crudeProtein: 0,
       energy: 0,
       fiber: 0,
+      lysine: 0,
+      methionine: 0,
+      calcium: 0,
+      phosphorus: 0,
+      salt: 0.3,
       cost: 0,
+      premix: 1,
       description: ''
     });
     setFormError(null);
@@ -258,6 +277,62 @@ const IngredientManagement = () => {
             </div>
             
             <div className="form-group">
+              <label className="form-label">Lysine (%)</label>
+              <input
+                type="number"
+                step="0.01"
+                value={formData.lysine}
+                onChange={(e) => setFormData({ ...formData, lysine: parseFloat(e.target.value) || 0 })}
+                className="form-input"
+              />
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Methionine (%)</label>
+              <input
+                type="number"
+                step="0.01"
+                value={formData.methionine}
+                onChange={(e) => setFormData({ ...formData, methionine: parseFloat(e.target.value) || 0 })}
+                className="form-input"
+              />
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Calcium (%)</label>
+              <input
+                type="number"
+                step="0.01"
+                value={formData.calcium}
+                onChange={(e) => setFormData({ ...formData, calcium: parseFloat(e.target.value) || 0 })}
+                className="form-input"
+              />
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Phosphorus (%)</label>
+              <input
+                type="number"
+                step="0.01"
+                value={formData.phosphorus}
+                onChange={(e) => setFormData({ ...formData, phosphorus: parseFloat(e.target.value) || 0 })}
+                className="form-input"
+              />
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Salt (%)</label>
+              <input
+                type="number"
+                step="0.01"
+                value={formData.salt}
+                onChange={(e) => setFormData({ ...formData, salt: parseFloat(e.target.value) || 0.3 })}
+                className="form-input"
+                placeholder="0.3"
+              />
+            </div>
+            
+            <div className="form-group">
               <label className="form-label">Cost (per kg)</label>
               <input
                 type="number"
@@ -265,6 +340,18 @@ const IngredientManagement = () => {
                 value={formData.cost}
                 onChange={(e) => setFormData({ ...formData, cost: parseFloat(e.target.value) || 0 })}
                 className="form-input"
+              />
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Premix (%)</label>
+              <input
+                type="number"
+                step="0.01"
+                value={formData.premix}
+                onChange={(e) => setFormData({ ...formData, premix: parseFloat(e.target.value) || 1 })}
+                className="form-input"
+                placeholder="1"
               />
             </div>
             
@@ -319,7 +406,25 @@ const IngredientManagement = () => {
                 <span className="ingredient-detail-label">Fiber:</span> {ingredient.fiber}%
               </div>
               <div className="ingredient-detail">
+                <span className="ingredient-detail-label">Lysine:</span> {ingredient.lysine}%
+              </div>
+              <div className="ingredient-detail">
+                <span className="ingredient-detail-label">Methionine:</span> {ingredient.methionine}%
+              </div>
+              <div className="ingredient-detail">
+                <span className="ingredient-detail-label">Calcium:</span> {ingredient.calcium}%
+              </div>
+              <div className="ingredient-detail">
+                <span className="ingredient-detail-label">Phosphorus:</span> {ingredient.phosphorus}%
+              </div>
+              <div className="ingredient-detail">
+                <span className="ingredient-detail-label">Salt:</span> {ingredient.salt}%
+              </div>
+              <div className="ingredient-detail">
                 <span className="ingredient-detail-label">Cost:</span> ${ingredient.cost}/kg
+              </div>
+              <div className="ingredient-detail">
+                <span className="ingredient-detail-label">Premix:</span> {ingredient.premix}%
               </div>
             </div>
             
