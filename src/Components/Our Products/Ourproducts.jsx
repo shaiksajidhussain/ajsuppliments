@@ -12,7 +12,7 @@ const Ourproducts = () => {
       name: 'Nutrivolent Se',
       code: 'NOGP 001',
       description: 'Organic Selenium Supplement',
-      image: 'https://www.ajsupplements.com/static/selenium.jpeg',
+      image: 'https://res.cloudinary.com/dgus6y6lm/image/upload/v1760024724/selinum_eiro4f.jpg',
       bgColor: '#3B82F6'
     },
     {
@@ -20,7 +20,7 @@ const Ourproducts = () => {
       name: 'Nutrivolent Ca',
       code: 'NIGP 001',
       description: 'Calcium Carbonate',
-      image: 'https://www.ajsupplements.com/static/caco3.jpeg',
+      image: 'https://res.cloudinary.com/dgus6y6lm/image/upload/v1760024724/KI_fmr2ju.png',
       bgColor: '#6B7280'
     },
     {
@@ -28,7 +28,7 @@ const Ourproducts = () => {
       name: 'Nutrivolent DCP',
       code: 'NIGP 002',
       description: 'Dicalcium Phosphate',
-      image: 'https://www.ajsupplements.com/static/dcp2.jpeg',
+      image: 'https://res.cloudinary.com/dgus6y6lm/image/upload/v1760024724/selenium_v57hid.jpg',
       bgColor: '#10B981'
     },
     {
@@ -36,7 +36,7 @@ const Ourproducts = () => {
       name: 'Nutrivolent Mg',
       code: 'NIGP 003',
       description: 'Magnesium Sulfate',
-      image: 'https://www.ajsupplements.com/static/MGSO4.png',
+      image: 'https://res.cloudinary.com/dgus6y6lm/image/upload/v1760024723/feso4_ma5d2k.jpg',
       bgColor: '#8B5CF6'
     },
     {
@@ -44,7 +44,7 @@ const Ourproducts = () => {
       name: 'Nutrivolent Zn',
       code: 'NIGP 004',
       description: 'Zinc Sulfate',
-      image: 'https://www.ajsupplements.com/static/znso4.jpeg',
+      image: 'https://res.cloudinary.com/dgus6y6lm/image/upload/v1760024723/dcp2_pucgxy.jpg',
       bgColor: '#F97316'
     },
     {
@@ -52,7 +52,7 @@ const Ourproducts = () => {
       name: 'Nutrivolent I',
       code: 'NIGP 005',
       description: 'Iodine Supplement',
-      image: 'https://www.ajsupplements.com/static/potassium.jpg',
+      image: 'https://res.cloudinary.com/dgus6y6lm/image/upload/v1760024722/caco3_lkus1y.webp',
       bgColor: '#EC4899'
     },
     {
@@ -60,7 +60,7 @@ const Ourproducts = () => {
       name: 'Nutrivolent Fe',
       code: 'NIGP 006',
       description: 'Iron Sulfate',
-      image: 'https://www.ajsupplements.com/static/feso4.jpeg',
+      image: 'https://res.cloudinary.com/dgus6y6lm/image/upload/v1760024723/feed_grade_min_c5rgd8.webp',
       bgColor: '#EF4444'
     }
   ];

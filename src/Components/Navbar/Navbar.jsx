@@ -196,11 +196,11 @@ const Navbar = ({ onLogout }) => {
               style={{ position: 'relative' }}
             >
               <img 
-                src="https://www.ajsupplements.com/static/logo.png" 
+                src="https://res.cloudinary.com/dgus6y6lm/image/upload/v1760024083/logo_ichq5k.png" 
                 alt="AJ Supplements Logo" 
                 style={{
-                  height: '56px',
-                  width: '56px',
+                  height: '70px',
+                  width: '70px',
                   objectFit: 'contain',
                   transition: 'transform 0.3s ease'
                 }}

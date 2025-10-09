@@ -492,14 +492,15 @@ const About = () => {
                 boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)'
               }}>
                 <img 
-                  src="https://www.ajsupplements.com/static/fami-qs-certification.jpg" 
+                  src="https://foodsafetystandard.wordpress.com/wp-content/uploads/2022/05/fami-qs-general.png" 
                   alt="FAMI-QS Certification" 
                   className="w-full h-48 object-cover image-hover-effect"
                   style={{
                     width: '100%',
-                    height: '250px',
+                    height: '300px',
                     objectFit: 'cover',
-                    transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
+                    transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+                    backgroundPosition: 'top'
                   }}
                   onMouseEnter={(e) => {
                     e.target.style.transform = 'scale(1.05) rotate(1deg)';

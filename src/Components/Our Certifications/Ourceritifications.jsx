@@ -12,7 +12,7 @@ const Ourceritifications = () => {
       title: 'ISO 9001:2015',
       subtitle: 'Quality Management System',
       description: 'Our modern production facilities are fully aligned with ISO 9001:2015 quality management standards, enabling us to maintain uniform product quality, complete traceability, and a strong focus on customer satisfaction.',
-      image: 'https://www.ajsupplements.com/static/ISO.jpeg',
+      image: 'https://prospectlegal.in/wp-content/uploads/2024/06/ISO9001-2015.png',
       icon: '🏆',
       bgColor: '#F59E0B',
       features: ['Quality Management', 'Complete Traceability', 'Customer Satisfaction', 'Uniform Product Quality']
@@ -22,7 +22,7 @@ const Ourceritifications = () => {
       title: 'FAMI-QS',
       subtitle: 'Certified Manufacturing',
       description: 'Manufacturing Excellence - Our state-of-the-art production facilities operate in accordance with FAMI-QS standards, ensuring consistent quality, purity and safety in all our nutritional supplements.',
-      image: 'https://www.ajsupplements.com/static/fami-qs2.jpeg',
+      image: 'https://res.cloudinary.com/dgus6y6lm/image/upload/v1760024965/fami-qs2_fdvxnn.jpg',
       icon: '⭐',
       bgColor: '#10B981',
       features: ['Manufacturing Excellence', 'Consistent Quality', 'Purity Standards', 'Safety Assurance']

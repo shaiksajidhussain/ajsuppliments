@@ -11,7 +11,7 @@ const OurExpertise = () => {
       id: 1,    
       title: 'Feed-Grade Trace Minerals',
       description: 'Specialized in Feed-Grade Trace Minerals & Premixes - Providing organic and inorganic mineral supplements along with mineral and vitamin premixes tailored to meet the specific nutritional requirements of cattle and poultry.',
-      image: 'https://www.ajsupplements.com/static/feed_grade_min.webp',
+      image: 'https://res.cloudinary.com/dgus6y6lm/image/upload/v1760024582/presicion_zisccz.jpg',
       icon: '🧪',
       features: ['Organic & Inorganic Minerals', 'Custom Formulations', 'Species-Specific Nutrition', 'Quality Assurance']
     },
@@ -19,7 +19,7 @@ const OurExpertise = () => {
       id: 2,
       title: 'Precision Formulations',
       description: 'Scientifically developed trace minerals and vitamin premixes designed to meet species-specific dietary needs, fully compliant with global feed safety regulations.',
-      image: 'https://www.ajsupplements.com/static/presicion.jpg',
+      image: 'https://res.cloudinary.com/dgus6y6lm/image/upload/v1760024584/presicion2_axzk3f.webp',
       icon: '🔬',
       features: ['Scientific Research', 'Global Compliance', 'Advanced Technology', 'Precision Testing']
     },
@@ -27,7 +27,7 @@ const OurExpertise = () => {
       id: 3,
       title: 'Client-Centric Approach',
       description: 'We offer custom formulations, efficient supply chain management and technical support to meet the unique nutritional goals of our clients across the livestock and poultry industry.',
-      image: 'https://www.ajsupplements.com/static/customer_centric.webp',
+      image: 'https://res.cloudinary.com/dgus6y6lm/image/upload/v1760024582/Picture5_zzbrnn.png',
       icon: '🤝',
       features: ['Custom Solutions', 'Supply Chain Management', 'Technical Support', 'Client Success']
     }

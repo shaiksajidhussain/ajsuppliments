@@ -17,21 +17,21 @@ const Hero = () => {
   const slides = [
     {
       id: 1,
-      image: 'https://www.ajsupplements.com/static/1.jpeg',
+      image: 'https://images.unsplash.com/photo-1507103011901-e954d6ec0988?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
       title: 'Nutrivolent',
       subtitle: 'Advanced Nutritional Solutions for Livestock',
       description: 'Partner with us to unlock the full potential of your livestock and drive sustainable business growth through our advanced nutritional strategies. Revolutionize your livestock\'s health and productivity by collaborating with the industry leader in performance trace minerals and innovative nutritional solutions.'
     },
     {
       id: 2,
-      image: 'https://www.ajsupplements.com/static/2.jpg',
+      image: 'https://images.unsplash.com/photo-1440428099904-c6d459a7e7b5?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
       title: 'Premium Quality',
       subtitle: 'Science-Backed Supplements for Animal Health',
       description: 'Our cutting-edge research and development team creates premium nutritional supplements that enhance animal performance, boost immunity, and ensure optimal health. Trust in our certified quality standards and proven results.'
     },
     {
       id: 3,
-      image: 'https://www.ajsupplements.com/static/3.jpeg',
+      image: 'https://images.unsplash.com/photo-1618680637148-342628668416?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
       title: 'Global Excellence',
       subtitle: 'Worldwide Distribution & Expert Support',
       description: 'With decades of experience in animal nutrition, we provide comprehensive solutions for farmers, veterinarians, and agricultural professionals worldwide. Our global network ensures reliable supply and expert technical support.'
