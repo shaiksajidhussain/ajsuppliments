@@ -227,7 +227,7 @@ const Contact = () => {
                       fontWeight: '600',
                       color: '#ffffff',
                       margin: 0
-                    }}>+91-99589625156, 9573049660</p>
+                    }}>+91-9959625156, 9573049660</p>
                   </div>
                 </div>
 
@@ -312,10 +312,10 @@ const Contact = () => {
                       color: '#ffffff',
                       lineHeight: '1.75'
                     }}>
-                      <p style={{ margin: 0 }}>My Space Building, 2nd Floor,</p>
-                      <p style={{ margin: 0 }}>Above Airtel Office, Kondapur,</p>
-                      <p style={{ margin: 0 }}>Hyderabad, Telangana, India,</p>
-                      <p style={{ margin: 0 }}>Pincode: 500084</p>
+                      <p style={{ margin: 0 }}>Flat no.403, #3-587/1, Kasim Ali Towers,</p>
+                      <p style={{ margin: 0 }}>Subhash Chandra Bose Nagar, New Hafeezpet,</p>
+                      <p style={{ margin: 0 }}>Hyderabad, Telangana, India</p>
+                      <p style={{ margin: 0 }}>Pincode: 500049</p>
                     </div>
                   </div>
                 </div>

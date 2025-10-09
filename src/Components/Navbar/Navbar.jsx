@@ -249,7 +249,7 @@ const Navbar = ({ onLogout }) => {
               { name: 'EXPERTISE', id: 'expertise', type: 'scroll' },
               { name: 'PRODUCTS', id: 'products', type: 'scroll' },
               // { name: 'CERTIFICATIONS', id: 'certifications', type: 'scroll' },
-              { name: 'SOFTWARE', id: 'oursoftware', type: 'route' },
+              // { name: 'SOFTWARE', id: 'oursoftware', type: 'route' },
               { name: 'CONTACT', id: 'contact', type: 'scroll' }
             ].map((link, index) => {
               const isActive = link.type === 'scroll' ? activeSection === link.id : window.location.pathname === `/${link.id}`;

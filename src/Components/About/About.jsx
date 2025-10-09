@@ -27,7 +27,7 @@ const ImageCarousel = () => {
       alt: 'Farm animals in natural environment'
     },
     {
-      src: 'https://thumbs.dreamstime.com/b/free-range-chickens-running-farm-sunset-happy-freely-reveling-warm-golden-light-enjoying-their-peaceful-375485872.jpg',
+      src: 'https://t4.ftcdn.net/jpg/15/09/41/07/360_F_1509410729_vkwbNtFS3ZK4m6fBwheWlxdGNWSyrip4.jpg',
       title: 'Free Range Poultry',
       description: 'Happy birds, quality eggs',
       alt: 'Free range chickens at sunset'
@@ -129,70 +129,6 @@ const ImageCarousel = () => {
         </div>
       </div>
 
-      {/* Navigation Arrows */}
-      <button
-        onClick={prevImage}
-        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100"
-        style={{
-          position: 'absolute',
-          left: '16px',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          backgroundColor: 'rgba(255, 255, 255, 0.2)',
-          color: '#ffffff',
-          padding: '12px',
-          borderRadius: '50%',
-          border: 'none',
-          cursor: 'pointer',
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          opacity: isHovered ? 1 : 0,
-          backdropFilter: 'blur(10px)'
-        }}
-        onMouseEnter={(e) => {
-          e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
-          e.target.style.transform = 'translateY(-50%) scale(1.1)';
-        }}
-        onMouseLeave={(e) => {
-          e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-          e.target.style.transform = 'translateY(-50%) scale(1)';
-        }}
-      >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-
-      <button
-        onClick={nextImage}
-        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100"
-        style={{
-          position: 'absolute',
-          right: '16px',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          backgroundColor: 'rgba(255, 255, 255, 0.2)',
-          color: '#ffffff',
-          padding: '12px',
-          borderRadius: '50%',
-          border: 'none',
-          cursor: 'pointer',
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          opacity: isHovered ? 1 : 0,
-          backdropFilter: 'blur(10px)'
-        }}
-        onMouseEnter={(e) => {
-          e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
-          e.target.style.transform = 'translateY(-50%) scale(1.1)';
-        }}
-        onMouseLeave={(e) => {
-          e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-          e.target.style.transform = 'translateY(-50%) scale(1)';
-        }}
-      >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
 
       {/* Dots Indicator */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2" style={{
@@ -454,7 +390,7 @@ const About = () => {
             </div>
 
             {/* CTA Button */}
-            <div className="mt-12" style={{ marginTop: '48px' }}>
+            <div className="" style={{ marginTop: '5px' }}>
               <button 
                 className={`group relative px-10 py-5 rounded-full font-bold text-lg transition-all duration-700 transform hover:scale-105 hover:shadow-2xl ${
                   isDarkMode 
@@ -498,7 +434,7 @@ const About = () => {
                   transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}>Get in Touch</span>
               </button>
-            </div>
+              </div>
           </div>
 
           {/* Right Side - Image Carousel */}
@@ -508,7 +444,7 @@ const About = () => {
             gap: '32px'
           }}>
             {/* Main Image Carousel */}
-            <div className="relative group" style={{ position: 'relative' }}>
+            <div className="relative group" style={{ position: 'relative' , bottom: '80px' }}>
               <div className="relative overflow-hidden rounded-3xl shadow-2xl" style={{
                 position: 'relative',
                 overflow: 'hidden',
@@ -531,6 +467,8 @@ const About = () => {
                 filter: 'blur(24px)',
                 animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
               }}></div>
+
+              
               <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-purple-500/20 rounded-full blur-xl animate-pulse" style={{ 
                 position: 'absolute',
                 bottom: '-16px',
@@ -546,7 +484,7 @@ const About = () => {
             </div>
 
             {/* Certification Image */}
-            <div ref={certRef} className="relative group" style={{ position: 'relative' }}>
+            <div ref={certRef} className="relative group" style={{ position: 'relative' , bottom: '70px' }}>
               <div className="relative overflow-hidden rounded-2xl shadow-xl" style={{
                 position: 'relative',
                 overflow: 'hidden',
@@ -559,7 +497,7 @@ const About = () => {
                   className="w-full h-48 object-cover image-hover-effect"
                   style={{
                     width: '100%',
-                    height: '192px',
+                    height: '250px',
                     objectFit: 'cover',
                     transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
                   }}

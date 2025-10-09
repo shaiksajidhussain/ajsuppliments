@@ -388,7 +388,7 @@ const SharedSpeciesForm = ({
           </div>
 
             {/* Select Ingredients Section */}
-            <IngredientSelection style={{padding: '32px 16px'}}
+            <IngredientSelection  className='mt-10'
               onIngredientsChange={(ingredients) => {
                 setSelectedIngredients(ingredients);
                 console.log('Selected ingredients:', ingredients);

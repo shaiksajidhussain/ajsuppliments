@@ -11,7 +11,7 @@ const Ourproducts = () => {
       id: 1,
       name: 'Nutrivolent Se',
       code: 'NOGP 001',
-      description: 'Selenium Supplement',
+      description: 'Organic Selenium Supplement',
       image: 'https://www.ajsupplements.com/static/selenium.jpeg',
       bgColor: '#3B82F6'
     },

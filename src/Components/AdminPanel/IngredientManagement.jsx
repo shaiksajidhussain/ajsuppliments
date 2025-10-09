@@ -7,11 +7,14 @@ const IngredientManagement = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingIngredient, setEditingIngredient] = useState(null);
   const [formError, setFormError] = useState(null);
+  const [speciesData, setSpeciesData] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
     category: '',
+    speciesId: '',
     crudeProtein: 0,  // Changed from 'protein' to 'crudeProtein'
     energy: 0,
+    tdn: 0,  // TDN for non-poultry species
     fiber: 0,
     lysine: 0,
     methionine: 0,
@@ -36,7 +39,30 @@ const IngredientManagement = () => {
 
   useEffect(() => {
     fetchIngredients();
+    fetchSpeciesData();
   }, []);
+
+  const fetchSpeciesData = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch('http://localhost:3001/api/species/hierarchy', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch species data');
+      }
+
+      const data = await response.json();
+      setSpeciesData(data.hierarchy || []);
+    } catch (err) {
+      console.error('Error fetching species data:', err);
+    }
+  };
 
   const fetchIngredients = async () => {
     try {
@@ -103,8 +129,33 @@ const IngredientManagement = () => {
     setFormData({
       name: ingredient.name,
       category: ingredient.category,
+      speciesId: ingredient.speciesId || '',
       crudeProtein: ingredient.crudeProtein,
-      energy: ingredient.energy,
+      energy: ingredient.energy || 0,
+      tdn: ingredient.tdn || 0,
+      fiber: ingredient.fiber,
+      lysine: ingredient.lysine || 0,
+      methionine: ingredient.methionine || 0,
+      calcium: ingredient.calcium || 0,
+      phosphorus: ingredient.phosphorus || 0,
+      salt: ingredient.salt || 0.3,
+      cost: ingredient.cost,
+      premix: ingredient.premix || 1,
+      description: ingredient.description || ''
+    });
+    setShowForm(true);
+    setFormError(null);
+  };
+
+  const handleCopy = (ingredient) => {
+    setEditingIngredient(null); // Not editing, creating a new one
+    setFormData({
+      name: `${ingredient.name} (Copy)`,
+      category: ingredient.category,
+      speciesId: ingredient.speciesId || '',
+      crudeProtein: ingredient.crudeProtein,
+      energy: ingredient.energy || 0,
+      tdn: ingredient.tdn || 0,
       fiber: ingredient.fiber,
       lysine: ingredient.lysine || 0,
       methionine: ingredient.methionine || 0,
@@ -151,8 +202,10 @@ const IngredientManagement = () => {
     setFormData({
       name: '',
       category: '',
+      speciesId: '',
       crudeProtein: 0,
       energy: 0,
+      tdn: 0,
       fiber: 0,
       lysine: 0,
       methionine: 0,
@@ -164,6 +217,12 @@ const IngredientManagement = () => {
       description: ''
     });
     setFormError(null);
+  };
+
+  // Helper function to check if selected species is poultry
+  const isPoultrySpecies = () => {
+    const selectedSpecies = speciesData.find(s => s.id === formData.speciesId);
+    return selectedSpecies?.name?.toLowerCase() === 'poultry';
   };
 
   if (loading) {
@@ -242,6 +301,23 @@ const IngredientManagement = () => {
                 ))}
               </select>
             </div>
+
+            <div className="form-group">
+              <label className="form-label">Species *</label>
+              <select
+                value={formData.speciesId}
+                onChange={(e) => setFormData({ ...formData, speciesId: e.target.value })}
+                className="form-input"
+                required
+              >
+                <option value="">Select Species</option>
+                {speciesData.map((species) => (
+                  <option key={species.id} value={species.id}>
+                    {species.name}
+                  </option>
+                ))}
+              </select>
+            </div>
             
             <div className="form-group">
               <label className="form-label">Protein (%)</label>
@@ -254,16 +330,29 @@ const IngredientManagement = () => {
               />
             </div>
             
-            <div className="form-group">
-              <label className="form-label">Energy (kcal/kg)</label>
-              <input
-                type="number"
-                step="0.1"
-                value={formData.energy}
-                onChange={(e) => setFormData({ ...formData, energy: parseFloat(e.target.value) || 0 })}
-                className="form-input"
-              />
-            </div>
+            {isPoultrySpecies() ? (
+              <div className="form-group">
+                <label className="form-label">Energy (kcal/kg)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={formData.energy}
+                  onChange={(e) => setFormData({ ...formData, energy: parseFloat(e.target.value) || 0 })}
+                  className="form-input"
+                />
+              </div>
+            ) : (
+              <div className="form-group">
+                <label className="form-label">TDN (%)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={formData.tdn}
+                  onChange={(e) => setFormData({ ...formData, tdn: parseFloat(e.target.value) || 0 })}
+                  className="form-input"
+                />
+              </div>
+            )}
             
             <div className="form-group">
               <label className="form-label">Fiber (%)</label>
@@ -276,49 +365,53 @@ const IngredientManagement = () => {
               />
             </div>
             
-            <div className="form-group">
-              <label className="form-label">Lysine (%)</label>
-              <input
-                type="number"
-                step="0.01"
-                value={formData.lysine}
-                onChange={(e) => setFormData({ ...formData, lysine: parseFloat(e.target.value) || 0 })}
-                className="form-input"
-              />
-            </div>
-            
-            <div className="form-group">
-              <label className="form-label">Methionine (%)</label>
-              <input
-                type="number"
-                step="0.01"
-                value={formData.methionine}
-                onChange={(e) => setFormData({ ...formData, methionine: parseFloat(e.target.value) || 0 })}
-                className="form-input"
-              />
-            </div>
-            
-            <div className="form-group">
-              <label className="form-label">Calcium (%)</label>
-              <input
-                type="number"
-                step="0.01"
-                value={formData.calcium}
-                onChange={(e) => setFormData({ ...formData, calcium: parseFloat(e.target.value) || 0 })}
-                className="form-input"
-              />
-            </div>
-            
-            <div className="form-group">
-              <label className="form-label">Phosphorus (%)</label>
-              <input
-                type="number"
-                step="0.01"
-                value={formData.phosphorus}
-                onChange={(e) => setFormData({ ...formData, phosphorus: parseFloat(e.target.value) || 0 })}
-                className="form-input"
-              />
-            </div>
+            {isPoultrySpecies() && (
+              <>
+                <div className="form-group">
+                  <label className="form-label">Lysine (%)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.lysine}
+                    onChange={(e) => setFormData({ ...formData, lysine: parseFloat(e.target.value) || 0 })}
+                    className="form-input"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Methionine (%)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.methionine}
+                    onChange={(e) => setFormData({ ...formData, methionine: parseFloat(e.target.value) || 0 })}
+                    className="form-input"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Calcium (%)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.calcium}
+                    onChange={(e) => setFormData({ ...formData, calcium: parseFloat(e.target.value) || 0 })}
+                    className="form-input"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Phosphorus (%)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.phosphorus}
+                    onChange={(e) => setFormData({ ...formData, phosphorus: parseFloat(e.target.value) || 0 })}
+                    className="form-input"
+                  />
+                </div>
+              </>
+            )}
             
             <div className="form-group">
               <label className="form-label">Salt (%)</label>
@@ -386,70 +479,105 @@ const IngredientManagement = () => {
 
       {/* Ingredients Grid */}
       <div className="ingredient-grid">
-        {ingredients.map((ingredient) => (
-          <div key={ingredient.id} className="ingredient-item">
-            <div className="ingredient-header">
-              <h3 className="ingredient-name">{ingredient.name}</h3>
-              <span className="ingredient-category">
-                {ingredient.category}
-              </span>
-            </div>
+        {ingredients.map((ingredient) => {
+          const species = speciesData.find(s => s.id === ingredient.speciesId);
+          const isPoultry = species?.name?.toLowerCase() === 'poultry';
+          
+          return (
+            <div key={ingredient.id} className="ingredient-item">
+              <div className="ingredient-header">
+                <h3 className="ingredient-name">{ingredient.name}</h3>
+                <span className="ingredient-category">
+                  {ingredient.category}
+                </span>
+              </div>
+              
+              {species && (
+                <div style={{ 
+                  padding: '0.5rem', 
+                  backgroundColor: '#f3f4f6', 
+                  borderRadius: '0.375rem',
+                  marginBottom: '0.75rem'
+                }}>
+                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#4b5563' }}>
+                    Species: {species.name}
+                  </span>
+                </div>
+              )}
+              
+              <div className="ingredient-details">
+                <div className="ingredient-detail">
+                  <span className="ingredient-detail-label">Protein:</span> {ingredient.crudeProtein}%
+                </div>
+                {isPoultry ? (
+                  <div className="ingredient-detail">
+                    <span className="ingredient-detail-label">Energy:</span> {ingredient.energy} kcal
+                  </div>
+                ) : (
+                  <div className="ingredient-detail">
+                    <span className="ingredient-detail-label">TDN:</span> {ingredient.tdn}%
+                  </div>
+                )}
+                <div className="ingredient-detail">
+                  <span className="ingredient-detail-label">Fiber:</span> {ingredient.fiber}%
+                </div>
+                {isPoultry && (
+                  <>
+                    <div className="ingredient-detail">
+                      <span className="ingredient-detail-label">Lysine:</span> {ingredient.lysine}%
+                    </div>
+                    <div className="ingredient-detail">
+                      <span className="ingredient-detail-label">Methionine:</span> {ingredient.methionine}%
+                    </div>
+                    <div className="ingredient-detail">
+                      <span className="ingredient-detail-label">Calcium:</span> {ingredient.calcium}%
+                    </div>
+                    <div className="ingredient-detail">
+                      <span className="ingredient-detail-label">Phosphorus:</span> {ingredient.phosphorus}%
+                    </div>
+                  </>
+                )}
+                <div className="ingredient-detail">
+                  <span className="ingredient-detail-label">Salt:</span> {ingredient.salt}%
+                </div>
+                <div className="ingredient-detail">
+                  <span className="ingredient-detail-label">Cost:</span> ${ingredient.cost}/kg
+                </div>
+                <div className="ingredient-detail">
+                  <span className="ingredient-detail-label">Premix:</span> {ingredient.premix}%
+                </div>
+              </div>
             
-            <div className="ingredient-details">
-              <div className="ingredient-detail">
-                <span className="ingredient-detail-label">Protein:</span> {ingredient.crudeProtein}%
-              </div>
-              <div className="ingredient-detail">
-                <span className="ingredient-detail-label">Energy:</span> {ingredient.energy} kcal
-              </div>
-              <div className="ingredient-detail">
-                <span className="ingredient-detail-label">Fiber:</span> {ingredient.fiber}%
-              </div>
-              <div className="ingredient-detail">
-                <span className="ingredient-detail-label">Lysine:</span> {ingredient.lysine}%
-              </div>
-              <div className="ingredient-detail">
-                <span className="ingredient-detail-label">Methionine:</span> {ingredient.methionine}%
-              </div>
-              <div className="ingredient-detail">
-                <span className="ingredient-detail-label">Calcium:</span> {ingredient.calcium}%
-              </div>
-              <div className="ingredient-detail">
-                <span className="ingredient-detail-label">Phosphorus:</span> {ingredient.phosphorus}%
-              </div>
-              <div className="ingredient-detail">
-                <span className="ingredient-detail-label">Salt:</span> {ingredient.salt}%
-              </div>
-              <div className="ingredient-detail">
-                <span className="ingredient-detail-label">Cost:</span> ${ingredient.cost}/kg
-              </div>
-              <div className="ingredient-detail">
-                <span className="ingredient-detail-label">Premix:</span> {ingredient.premix}%
+              {ingredient.description && (
+                <p style={{ fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.75rem', lineHeight: '1.4' }}>
+                  {ingredient.description}
+                </p>
+              )}
+              
+              <div className="ingredient-actions">
+                <button
+                  onClick={() => handleEdit(ingredient)}
+                  className="species-item-btn edit"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleCopy(ingredient)}
+                  className="species-item-btn"
+                  style={{ backgroundColor: '#3b82f6', color: 'white' }}
+                >
+                  Copy
+                </button>
+                <button
+                  onClick={() => handleDelete(ingredient.id)}
+                  className="species-item-btn delete"
+                >
+                  Delete
+                </button>
               </div>
             </div>
-            
-            {ingredient.description && (
-              <p style={{ fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.75rem', lineHeight: '1.4' }}>
-                {ingredient.description}
-              </p>
-            )}
-            
-            <div className="ingredient-actions">
-              <button
-                onClick={() => handleEdit(ingredient)}
-                className="species-item-btn edit"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(ingredient.id)}
-                className="species-item-btn delete"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       
       {ingredients.length === 0 && (
