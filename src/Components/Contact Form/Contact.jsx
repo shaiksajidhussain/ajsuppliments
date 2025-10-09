@@ -19,6 +19,8 @@ const Contact = () => {
     packaging: '',
     message: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null); // 'success', 'error', or null
 
   const products = [
     'Nutrivolent Se - NOGP 001',
@@ -77,10 +79,65 @@ const Contact = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    alert('Thank you for your inquiry! We will get back to you soon.');
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+
+    try {
+      // Backend API endpoint
+      const API_BASE_URL =  'https://aj-supplements-backend-6ein.vercel.app';
+      
+      // Prepare form data for backend
+      const submitData = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        businessType: formData.businessType,
+        productQuantity: formData.productQuantity,
+        address: formData.address,
+        productType: formData.productType,
+        packaging: formData.packaging,
+        message: formData.message
+      };
+
+      // Send data to backend API
+      const response = await fetch(`${API_BASE_URL}/api/contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submitData)
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setSubmitStatus('success');
+        // Reset form after successful submission
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          businessType: '',
+          productQuantity: '',
+          pinCode: '',
+          address: '',
+          product: '',
+          productType: '',
+          packaging: '',
+          message: ''
+        });
+      } else {
+        throw new Error(result.message || 'Failed to send message');
+      }
+      
+    } catch (error) {
+      console.error('Error sending email:', error);
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -670,13 +727,49 @@ const Contact = () => {
                   ></textarea>
                 </div>
 
+                {/* Status Messages */}
+                {submitStatus === 'success' && (
+                  <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-4 text-green-300" style={{
+                    backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                    border: '1px solid rgba(34, 197, 94, 0.3)',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    color: '#86efac'
+                  }}>
+                    <p className="text-sm font-medium" style={{ fontSize: '0.875rem', fontWeight: '500', margin: 0 }}>
+                      ✅ Thank you! Your inquiry has been sent successfully. We'll get back to you soon.
+                    </p>
+                  </div>
+                )}
+
+                {submitStatus === 'error' && (
+                  <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-4 text-red-300" style={{
+                    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    color: '#fca5a5'
+                  }}>
+                    <p className="text-sm font-medium" style={{ fontSize: '0.875rem', fontWeight: '500', margin: 0 }}>
+                      ❌ Sorry, there was an error sending your message. Please try again or contact us directly.
+                    </p>
+                  </div>
+                )}
+
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-400 hover:to-red-400 text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl flex items-center justify-center space-x-2"
+                  disabled={isSubmitting}
+                  className={`w-full font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2 ${
+                    isSubmitting 
+                      ? 'bg-gray-500 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-400 hover:to-red-400 transform hover:scale-105 hover:shadow-xl'
+                  }`}
                   style={{
                     width: '100%',
-                    background: 'linear-gradient(to right, #f97316, #ef4444)',
+                    background: isSubmitting 
+                      ? '#6b7280' 
+                      : 'linear-gradient(to right, #f97316, #ef4444)',
                     color: '#ffffff',
                     fontWeight: 'bold',
                     padding: 'clamp(12px, 3vw, 16px) clamp(24px, 4vw, 32px)',
@@ -687,22 +780,42 @@ const Contact = () => {
                     justifyContent: 'center',
                     gap: '8px',
                     border: 'none',
-                    cursor: 'pointer',
+                    cursor: isSubmitting ? 'not-allowed' : 'pointer',
                     fontSize: 'clamp(0.875rem, 2vw, 1rem)'
                   }}
                   onMouseEnter={(e) => {
-                    e.target.style.background = 'linear-gradient(to right, #fb923c, #f87171)';
-                    e.target.style.transform = 'scale(1.05)';
-                    e.target.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.3)';
+                    if (!isSubmitting) {
+                      e.target.style.background = 'linear-gradient(to right, #fb923c, #f87171)';
+                      e.target.style.transform = 'scale(1.05)';
+                      e.target.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.3)';
+                    }
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.background = 'linear-gradient(to right, #f97316, #ef4444)';
-                    e.target.style.transform = 'scale(1)';
-                    e.target.style.boxShadow = 'none';
+                    if (!isSubmitting) {
+                      e.target.style.background = 'linear-gradient(to right, #f97316, #ef4444)';
+                      e.target.style.transform = 'scale(1)';
+                      e.target.style.boxShadow = 'none';
+                    }
                   }}
                 >
-                  <PiPaperPlaneTilt className="text-lg sm:text-xl" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.25rem)' }} />
-                  <span>Submit</span>
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" style={{
+                        animation: 'spin 1s linear infinite',
+                        borderRadius: '50%',
+                        height: '20px',
+                        width: '20px',
+                        border: '2px solid transparent',
+                        borderBottomColor: '#ffffff'
+                      }}></div>
+                      <span>Sending...</span>
+                    </>
+                  ) : (
+                    <>
+                      <PiPaperPlaneTilt className="text-lg sm:text-xl" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.25rem)' }} />
+                      <span>Submit</span>
+                    </>
+                  )}
                 </button>
               </form>
             </div>

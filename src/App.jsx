@@ -35,10 +35,54 @@ const App = () => {
     <ThemeProvider>
       <Router>
         <Routes>
-          {/* Redirect root to home */}
+          {/* Main App Route - Home at root */}
           <Route 
             path="/" 
-            element={<Navigate to="/home" replace />}
+            element={
+         
+                <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 transition-all duration-500">
+                  <Navbar onLogout={handleLogout} />
+                  
+                  {/* Main content with sections for smooth scrolling */}
+                  <main>
+                    {/* Hero Section */}
+                    <section id="hero" className="h-screen">
+                      <Hero/>
+                    </section>
+
+                    {/* About Section */}
+                    <section id="about">
+                      <About />
+                    </section>
+
+                    {/* Expertise Section */}
+                    <section id="expertise">
+                      <OurExpertise/>
+                    </section>
+
+                    {/* Products Section */}
+                    <section id="products">
+                      <Ourproducts/>
+                    </section>
+
+                    {/* Certifications Section */}
+                    <section id="certifications">
+                      <Ourceritifications/>
+                    </section>
+
+                    {/* Software Section */}
+                    <section id="software">
+                      <Oursoftwareadnwhoweare/>
+                    </section>
+
+                    {/* Contact Section */}
+                    <section id="contact">
+                      <Contact/>
+                    </section>
+                  </main>
+                </div>
+              
+            } 
           />
           
           {/* Login Route */}
@@ -127,60 +171,10 @@ const App = () => {
             }
           />
           
-          {/* Main App Route */}
-          <Route 
-            path="/home" 
-            element={
-         
-                <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 transition-all duration-500">
-                  <Navbar onLogout={handleLogout} />
-                  
-                  {/* Main content with sections for smooth scrolling */}
-                  <main>
-                    {/* Hero Section */}
-                    <section id="hero" className="h-screen">
-                      <Hero/>
-                    </section>
-
-                    {/* About Section */}
-                    <section id="about">
-                      <About />
-                    </section>
-
-                    {/* Expertise Section */}
-                    <section id="expertise">
-                      <OurExpertise/>
-                    </section>
-
-                    {/* Products Section */}
-                    <section id="products">
-                      <Ourproducts/>
-                    </section>
-
-                    {/* Certifications Section */}
-                    <section id="certifications">
-                      <Ourceritifications/>
-                    </section>
-
-                    {/* Software Section */}
-                    <section id="software">
-                      <Oursoftwareadnwhoweare/>
-                    </section>
-
-                    {/* Contact Section */}
-                    <section id="contact">
-                      <Contact/>
-                    </section>
-                  </main>
-                </div>
-              
-            } 
-          />
-          
-          {/* Catch-all route - redirect to home */}
+          {/* Catch-all route - redirect to root */}
           <Route 
             path="*" 
-            element={<Navigate to="/home" replace />}
+            element={<Navigate to="/" replace />}
           />
         </Routes>
       </Router>
