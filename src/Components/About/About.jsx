@@ -438,69 +438,109 @@ const About = () => {
           </div>
 
           {/* Right Side - Image Carousel */}
-          <div ref={imageRef} className="space-y-8" style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '32px'
-          }}>
+          <div
+            ref={imageRef}
+            className="space-y-8"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '32px',
+            }}
+          >
             {/* Main Image Carousel */}
-            <div className="relative group" style={{ position: 'relative' , bottom: '80px' }}>
-              <div className="relative overflow-hidden rounded-3xl shadow-2xl" style={{
+            <div
+              className="relative group"
+              style={{
                 position: 'relative',
-                overflow: 'hidden',
-                borderRadius: '24px',
-                boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)',
-                height: '500px'
-              }}>
+                // Only apply bottom offset on screens wider than 640px (not on mobile)
+                bottom:
+                  typeof window !== "undefined" && window.innerWidth <= 640
+                    ? undefined
+                    : '80px',
+              }}
+            >
+              <div
+                className="relative overflow-hidden rounded-3xl shadow-2xl"
+                style={{
+                  position: 'relative',
+                  overflow: 'hidden',
+                  borderRadius: '24px',
+                  boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)',
+                  height: '500px',
+                }}
+              >
                 <ImageCarousel />
               </div>
-              
-              {/* Floating Elements */}
-              <div className="absolute -top-4 -right-4 w-20 h-20 bg-blue-500/20 rounded-full blur-xl animate-pulse" style={{
-                position: 'absolute',
-                top: '-16px',
-                right: '-16px',
-                width: '80px',
-                height: '80px',
-                backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                borderRadius: '50%',
-                filter: 'blur(24px)',
-                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-              }}></div>
 
-              
-              <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-purple-500/20 rounded-full blur-xl animate-pulse" style={{ 
-                position: 'absolute',
-                bottom: '-16px',
-                left: '-16px',
-                width: '64px',
-                height: '64px',
-                backgroundColor: 'rgba(147, 51, 234, 0.2)',
-                borderRadius: '50%',
-                filter: 'blur(24px)',
-                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                animationDelay: '1s'
-              }}></div>
+              {/* Floating Elements */}
+              <div
+                className="absolute -top-4 -right-4 w-20 h-20 bg-blue-500/20 rounded-full blur-xl animate-pulse"
+                style={{
+                  position: 'absolute',
+                  top: '-16px',
+                  right: '-16px',
+                  width: '80px',
+                  height: '80px',
+                  backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                  borderRadius: '50%',
+                  filter: 'blur(24px)',
+                  animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                }}
+              ></div>
+
+              <div
+                className="absolute -bottom-4 -left-4 w-16 h-16 bg-purple-500/20 rounded-full blur-xl animate-pulse"
+                style={{
+                  position: 'absolute',
+                  // Remove bottom offset on mobile
+                  bottom:
+                    typeof window !== "undefined" && window.innerWidth <= 640
+                      ? undefined
+                      : '-16px',
+                  left: '-16px',
+                  width: '64px',
+                  height: '64px',
+                  backgroundColor: 'rgba(147, 51, 234, 0.2)',
+                  borderRadius: '50%',
+                  filter: 'blur(24px)',
+                  animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                  animationDelay: '1s',
+                }}
+              ></div>
             </div>
 
             {/* Certification Image */}
-            <div ref={certRef} className="relative group" style={{ position: 'relative' , bottom: '70px' }}>
-              <div className="relative overflow-hidden rounded-2xl shadow-xl" style={{
+            <div
+              ref={certRef}
+              className="relative group"
+              style={{
                 position: 'relative',
-                overflow: 'hidden',
-                borderRadius: '16px',
-                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)'
-              }}>
-                <img 
-                  src="https://foodsafetystandard.wordpress.com/wp-content/uploads/2022/05/fami-qs-general.png" 
-                  alt="FAMI-QS Certification" 
+                // Only apply bottom offset on desktop/tablet
+                bottom:
+                  typeof window !== "undefined" && window.innerWidth <= 640
+                    ? undefined
+                    : '70px',
+              }}
+            >
+              <div
+                className="relative overflow-hidden rounded-2xl shadow-xl"
+                style={{
+                  position: 'relative',
+                  overflow: 'hidden',
+                  borderRadius: '16px',
+                  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
+                }}
+              >
+                <img
+                  src="https://foodsafetystandard.wordpress.com/wp-content/uploads/2022/05/fami-qs-general.png"
+                  alt="FAMI-QS Certification"
                   className="w-full h-48 object-cover image-hover-effect"
                   style={{
                     width: '100%',
                     height: '300px',
                     objectFit: 'cover',
                     transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-                    backgroundPosition: 'top'
+                    backgroundPosition: 'top',
                   }}
                   onMouseEnter={(e) => {
                     e.target.style.transform = 'scale(1.05) rotate(1deg)';
@@ -511,33 +551,50 @@ const About = () => {
                     e.target.style.filter = 'brightness(1) contrast(1)';
                   }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/80 to-purple-600/80 opacity-0 group-hover:opacity-100 transition-all duration-700 flex items-center justify-center" style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  background: 'linear-gradient(to right, rgba(37, 99, 235, 0.8), rgba(147, 51, 234, 0.8))',
-                  opacity: 0,
-                  transition: 'all 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <div className="text-center text-white" style={{
-                    textAlign: 'center',
-                    color: '#ffffff'
-                  }}>
-                    <h3 className="text-2xl font-bold mb-2" style={{
-                      fontSize: '1.5rem',
-                      fontWeight: 'bold',
-                      margin: 0,
-                      marginBottom: '8px'
-                    }}>FAMI-QS</h3>
-                    <p className="text-sm" style={{
-                      fontSize: '0.875rem',
-                      margin: 0
-                    }}>Certified Quality Standards</p>
+                <div
+                  className="absolute inset-0 bg-gradient-to-r from-blue-600/80 to-purple-600/80 opacity-0 group-hover:opacity-100 transition-all duration-700 flex items-center justify-center"
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background:
+                      'linear-gradient(to right, rgba(37, 99, 235, 0.8), rgba(147, 51, 234, 0.8))',
+                    opacity: 0,
+                    transition: 'all 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <div
+                    className="text-center text-white"
+                    style={{
+                      textAlign: 'center',
+                      color: '#ffffff',
+                    }}
+                  >
+                    <h3
+                      className="text-2xl font-bold mb-2"
+                      style={{
+                        fontSize: '1.5rem',
+                        fontWeight: 'bold',
+                        margin: 0,
+                        marginBottom: '8px',
+                      }}
+                    >
+                      FAMI-QS
+                    </h3>
+                    <p
+                      className="text-sm"
+                      style={{
+                        fontSize: '0.875rem',
+                        margin: 0,
+                      }}
+                    >
+                      Certified Quality Standards
+                    </p>
                   </div>
                 </div>
               </div>
@@ -552,4 +609,4 @@ const About = () => {
   );
 };
 
-export default About;
+export default About; 

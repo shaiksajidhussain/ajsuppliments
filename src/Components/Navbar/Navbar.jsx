@@ -549,23 +549,6 @@ const Navbar = ({ onLogout }) => {
                   </a>
                 );
               })}
-              
-              {/* Mobile Logout Button */}
-              <div className="pt-4 border-t border-gray-300 dark:border-gray-600">
-                <button
-                  onClick={() => {
-                    onLogout();
-                    setIsMenuOpen(false);
-                  }}
-                  className={`w-full py-3 px-4 rounded-lg font-medium text-sm transition-all duration-300 ${
-                    isDarkMode 
-                      ? 'bg-red-600 hover:bg-red-700 text-white' 
-                      : 'bg-red-500 hover:bg-red-600 text-white'
-                  }`}
-                >
-                  Logout
-                </button>
-              </div>
             </div>
           </div>
         )}
