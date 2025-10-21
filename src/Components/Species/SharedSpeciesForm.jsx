@@ -16,7 +16,7 @@ const SharedSpeciesForm = ({
 }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    feedBatchWeight: '100',
+    feedBatchWeight: '10',
     species: speciesType,
     subspecies: '',
     animalType: 'broiler',

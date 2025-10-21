@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 const StepByStepCalculation = ({ calculationData, results }) => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -11,9 +11,9 @@ const StepByStepCalculation = ({ calculationData, results }) => {
     if (calculationData && results) {
       generateCalculationSteps();
     }
-  }, [calculationData, results]);
+  }, [calculationData, results, generateCalculationSteps]);
 
-  const generateCalculationSteps = () => {
+  const generateCalculationSteps = useCallback(() => {
     console.log('generateCalculationSteps called');
     const steps = [];
 
@@ -107,8 +107,12 @@ const StepByStepCalculation = ({ calculationData, results }) => {
     // Step 4: Pearson's Square Method
     const lpsAvgCP = energySources.reduce((sum, ing) => sum + ing.crudeProtein, 0) / energySources.length;
     const hps = proteinSources.reduce((max, ing) => ing.crudeProtein > max.crudeProtein ? ing : max);
-    const remainingNeedsCP = results.formulation?.nutritionalAnalysis?.required?.crudeProtein - ((fixedParts * (ricePolish?.crudeProtein || 11)) / 100);
+    
+    // Calculate remaining CP need after fixed ingredient contribution
+    const fixedContribution = (fixedParts * (ricePolish?.crudeProtein || 11)) / 100;
+    const remainingNeedsCP = results.formulation?.nutritionalAnalysis?.required?.crudeProtein - fixedContribution;
     const adjustedTarget = (remainingNeedsCP / 80) * 100;
+    
     const hpsDiff = Math.abs(adjustedTarget - lpsAvgCP);
     const lpsDiff = Math.abs(hps.crudeProtein - adjustedTarget);
     const totalRatio = hpsDiff + lpsDiff;
@@ -122,16 +126,18 @@ const StepByStepCalculation = ({ calculationData, results }) => {
           <h4 className="font-semibold text-yellow-800 mb-2">⬜ Pearson's Square Calculation:</h4>
           <div className="bg-white p-3 rounded border mb-3">
             <div className="grid grid-cols-2 gap-4 text-sm">
+              <div><strong>Original Requirement:</strong> {results.formulation?.nutritionalAnalysis?.required?.crudeProtein}%</div>
+              <div><strong>Fixed Contribution:</strong> {fixedContribution.toFixed(2)}%</div>
+              <div><strong>Remaining Need:</strong> {remainingNeedsCP.toFixed(2)}%</div>
+              <div><strong>Adjusted Target (80 parts):</strong> {adjustedTarget.toFixed(3)}%</div>
               <div><strong>LPS Average CP:</strong> {lpsAvgCP.toFixed(2)}%</div>
               <div><strong>HPS (Highest CP):</strong> {hps.name} - {hps.crudeProtein}%</div>
-              <div><strong>Adjusted Target CP:</strong> {adjustedTarget.toFixed(2)}%</div>
-              <div><strong>Remaining Parts:</strong> 80%</div>
             </div>
           </div>
           
           <div className="bg-gray-100 p-3 rounded border mb-3">
             <div className="text-center">
-              <div className="text-sm font-semibold">Target CP: {adjustedTarget.toFixed(2)}%</div>
+              <div className="text-sm font-semibold">Target CP: {adjustedTarget.toFixed(5)}%</div>
               <div className="flex justify-center items-center space-x-8 my-2">
                 <div className="text-center">
                   <div className="bg-blue-200 p-2 rounded">HPS</div>
@@ -146,11 +152,32 @@ const StepByStepCalculation = ({ calculationData, results }) => {
           </div>
           
           <div className="grid grid-cols-2 gap-4 text-sm">
-            <div><strong>HPS Difference:</strong> {hpsDiff.toFixed(2)}</div>
-            <div><strong>LPS Difference:</strong> {lpsDiff.toFixed(2)}</div>
-            <div><strong>Total Ratio:</strong> {totalRatio.toFixed(2)}</div>
-            <div><strong>HPS Parts:</strong> {hpsParts.toFixed(2)}%</div>
-            <div><strong>LPS Parts:</strong> {lpsParts.toFixed(2)}%</div>
+            <div><strong>Calculation Steps:</strong></div>
+            <div><strong>Values:</strong></div>
+            <div>Original Requirement:</div>
+            <div>{results.formulation?.nutritionalAnalysis?.required?.crudeProtein}%</div>
+            <div>Fixed Contribution:</div>
+            <div>{fixedContribution.toFixed(2)}%</div>
+            <div>Remaining Need:</div>
+            <div>{remainingNeedsCP.toFixed(2)}%</div>
+            <div>Adjusted Target:</div>
+            <div>{adjustedTarget.toFixed(3)}%</div>
+            <div><strong>HPS Difference:</strong></div>
+            <div><strong>{hps.crudeProtein.toFixed(3)}% - {adjustedTarget.toFixed(3)}% = {hpsDiff.toFixed(3)}</strong></div>
+            <div><strong>LPS Difference:</strong></div>
+            <div><strong>{adjustedTarget.toFixed(3)}% - {lpsAvgCP.toFixed(3)}% = {lpsDiff.toFixed(3)}</strong></div>
+            <div><strong>Total Ratio:</strong></div>
+            <div><strong>{hpsDiff.toFixed(3)} + {lpsDiff.toFixed(3)} = {totalRatio.toFixed(3)}</strong></div>
+            <div><strong>HPS Parts:</strong></div>
+            <div><strong>({hpsDiff.toFixed(3)} ÷ {totalRatio.toFixed(3)}) × 80% = {hpsParts.toFixed(3)}%</strong></div>
+            <div><strong>LPS Parts:</strong></div>
+            <div><strong>({lpsDiff.toFixed(3)} ÷ {totalRatio.toFixed(3)}) × 80% = {lpsParts.toFixed(3)}%</strong></div>
+            <div className="mt-2 pt-2 border-t border-gray-300">
+              <div><strong>Scale to 80 parts:</strong></div>
+              <div>LPS: {hpsDiff.toFixed(3)} ÷ {totalRatio.toFixed(3)} × 80 = {hpsParts.toFixed(3)}%</div>
+              <div>LPS Total: {lpsDiff.toFixed(3)} ÷ {totalRatio.toFixed(3)} × 80 = {lpsParts.toFixed(3)}%</div>
+              <div>LPS per ingredient: {lpsParts.toFixed(3)} ÷ {energySources.length} = {(lpsParts / energySources.length).toFixed(3)}% each</div>
+            </div>
           </div>
         </div>
       )
@@ -169,11 +196,11 @@ const StepByStepCalculation = ({ calculationData, results }) => {
               <strong>{ricePolish?.name || 'Rice Bran'} (Fixed):</strong> {fixedParts}%
             </div>
             <div className="bg-white p-2 rounded border text-sm">
-              <strong>{hps.name}:</strong> {hpsParts.toFixed(2)}%
+              <strong>{hps.name}:</strong> {hpsParts.toFixed(3)}%
             </div>
             {energySources.filter(ing => ing.name !== ricePolish?.name).map((ing, index) => (
               <div key={index} className="bg-white p-2 rounded border text-sm">
-                <strong>{ing.name}:</strong> {lpsPartsEach.toFixed(2)}%
+                <strong>{ing.name}:</strong> {lpsPartsEach.toFixed(3)}%
               </div>
             ))}
           </div>
@@ -289,7 +316,7 @@ const StepByStepCalculation = ({ calculationData, results }) => {
 
     console.log('Generated steps:', steps.length);
     setCalculationSteps(steps);
-  };
+  }, [calculationData, results]);
 
   const nextStep = () => {
     setCurrentStep(prev => Math.min(prev + 1, calculationSteps.length - 1));

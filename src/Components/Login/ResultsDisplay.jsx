@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import StepByStepCalculation from '../Calculation/StepByStepCalculation';
 import TestStepByStep from '../Calculation/TestStepByStep';
+import DetailedCalculationTable from './DetailedCalculationTable';
 
 const ResultsDisplay = ({ results, onSave, onReset }) => {
   const [showStepByStep, setShowStepByStep] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [editableBatchWeight, setEditableBatchWeight] = useState(results?.formulation?.feedBatchWeight || 100);
+  
   if (!results || !results.formulation) {
     return null;
   }
@@ -15,6 +18,56 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
   // Separate main ingredients and supplements
   const mainIngredients = ingredients.filter(ing => !ing.isSupplement);
   const supplements = ingredients.filter(ing => ing.isSupplement);
+
+  // Recalculate all values based on editable batch weight
+  const recalculateForBatchWeight = (batchWeight) => {
+    const costPerKg = costAnalysis.costPerKg;
+    const newTotalCost = costPerKg * batchWeight;
+    
+    // Recalculate ingredient quantities
+    const recalculatedIngredients = ingredients.map(ingredient => {
+      const percentage = ingredient.parts;
+      const amountKg = (percentage / 100) * batchWeight;
+      const totalCost = amountKg * (ingredient.cost || 0);
+      
+      return {
+        ...ingredient,
+        amountKg: parseFloat(amountKg.toFixed(2)),
+        totalCost: parseFloat(totalCost.toFixed(2))
+      };
+    });
+
+    // Recalculate supplements quantities
+    const recalculatedSupplements = supplements.map(supplement => {
+      const percentage = supplement.parts;
+      const amountKg = (percentage / 100) * batchWeight;
+      const totalCost = amountKg * (supplement.cost || 0);
+      
+      return {
+        ...supplement,
+        amountKg: parseFloat(amountKg.toFixed(2)),
+        totalCost: parseFloat(totalCost.toFixed(2))
+      };
+    });
+
+    return {
+      totalCost: newTotalCost,
+      costPerKg: costPerKg,
+      feedBatchWeight: batchWeight,
+      ingredients: recalculatedIngredients,
+      supplements: recalculatedSupplements
+    };
+  };
+
+  const updatedCalculation = recalculateForBatchWeight(editableBatchWeight);
+
+  // Handle batch weight change
+  const handleBatchWeightChange = (e) => {
+    const newWeight = parseFloat(e.target.value);
+    if (newWeight > 0) {
+      setEditableBatchWeight(newWeight);
+    }
+  };
 
   return (
     <div className="bg-white/95 backdrop-blur-sm rounded-lg p-6 shadow-xl border border-white/20 mt-8">
@@ -72,12 +125,22 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
           <div className="text-sm text-blue-600 font-medium">Feed Batch Weight</div>
-          <div className="text-2xl font-bold text-blue-900">{formulation.feedBatchWeight} kg</div>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              value={editableBatchWeight}
+              onChange={handleBatchWeightChange}
+              className="text-2xl font-bold text-blue-900 bg-transparent border-b-2 border-blue-300 focus:border-blue-600 focus:outline-none w-20 text-center"
+              min="1"
+              step="0.1"
+            />
+            <span className="text-2xl font-bold text-blue-900">kg</span>
+          </div>
         </div>
         <div className="bg-green-50 rounded-lg p-4 border border-green-200">
           <div className="text-sm text-green-600 font-medium">Total Cost</div>
-          <div className="text-2xl font-bold text-green-900">₹{costAnalysis.totalCost}</div>
-          <div className="text-xs text-green-600">₹{costAnalysis.costPerKg}/kg</div>
+          <div className="text-2xl font-bold text-green-900">₹{updatedCalculation.totalCost.toFixed(2)}</div>
+          <div className="text-xs text-green-600">₹{updatedCalculation.costPerKg}/kg</div>
         </div>
         <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
           <div className="text-sm text-purple-600 font-medium">Total Ingredients</div>
@@ -95,6 +158,7 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
               <tr className="bg-gray-100">
                 <th className="border border-gray-300 px-4 py-2 text-left">Ingredient</th>
                 <th className="border border-gray-300 px-4 py-2 text-center">Parts</th>
+                <th className="border border-gray-300 px-4 py-2 text-center">Amount (kg)</th>
                 <th className="border border-gray-300 px-4 py-2 text-center">CP%</th>
                 <th className="border border-gray-300 px-4 py-2 text-center">ME (Kcal/kg)</th>
                 <th className="border border-gray-300 px-4 py-2 text-center">Ca%</th>
@@ -104,13 +168,14 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
               </tr>
             </thead>
             <tbody>
-              {mainIngredients.map((ing, idx) => (
+              {updatedCalculation.ingredients.filter(ing => !ing.isSupplement).map((ing, idx) => (
                 <tr key={idx} className={ing.isFixed ? 'bg-yellow-50' : 'bg-white'}>
                   <td className="border border-gray-300 px-4 py-2">
                     {ing.name}
                     {ing.isFixed && <span className="ml-2 text-xs text-yellow-700 font-medium">(Fixed)</span>}
                   </td>
                   <td className="border border-gray-300 px-4 py-2 text-center font-medium">{ing.parts}</td>
+                  <td className="border border-gray-300 px-4 py-2 text-center font-bold text-blue-600">{ing.amountKg} kg</td>
                   <td className="border border-gray-300 px-4 py-2 text-center">{ing.crudeProtein || '-'}</td>
                   <td className="border border-gray-300 px-4 py-2 text-center">{ing.energy || '-'}</td>
                   <td className="border border-gray-300 px-4 py-2 text-center">{ing.calcium || '-'}</td>
@@ -134,14 +199,16 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
                 <tr className="bg-blue-50">
                   <th className="border border-gray-300 px-4 py-2 text-left">Supplement</th>
                   <th className="border border-gray-300 px-4 py-2 text-center">Parts</th>
+                  <th className="border border-gray-300 px-4 py-2 text-center">Amount (kg)</th>
                   <th className="border border-gray-300 px-4 py-2 text-center">Purpose</th>
                 </tr>
               </thead>
               <tbody>
-                {supplements.map((ing, idx) => (
+                {updatedCalculation.supplements.map((ing, idx) => (
                   <tr key={idx} className="bg-blue-50/30">
                     <td className="border border-gray-300 px-4 py-2">{ing.name}</td>
                     <td className="border border-gray-300 px-4 py-2 text-center font-medium">{ing.parts}</td>
+                    <td className="border border-gray-300 px-4 py-2 text-center font-bold text-blue-600">{ing.amountKg} kg</td>
                     <td className="border border-gray-300 px-4 py-2 text-center text-sm">
                       {ing.name.includes('Methionine') && 'Amino Acid'}
                       {ing.name.includes('DCP') && 'Phosphorus + Calcium'}
@@ -173,10 +240,10 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
                   Required: {nutritionalAnalysis.required.crudeProtein}%
                 </div>
               </div>
-              {Math.abs(nutritionalAnalysis.deficits.crudeProtein) < 0.1 ? (
+              {nutritionalAnalysis.provided.crudeProtein >= (nutritionalAnalysis.required.crudeProtein || 0) ? (
                 <span className="text-green-600 text-2xl">✓</span>
               ) : (
-                <span className="text-yellow-600 text-xs">
+                <span className="text-red-600 text-xs">
                   {nutritionalAnalysis.deficits.crudeProtein > 0 ? '+' : ''}
                   {nutritionalAnalysis.deficits.crudeProtein.toFixed(2)}%
                 </span>
@@ -196,10 +263,10 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
                   Required: {nutritionalAnalysis.required.meKcalPerKg} Kcal/kg
                 </div>
               </div>
-              {Math.abs(nutritionalAnalysis.deficits.energy) < 10 ? (
+              {nutritionalAnalysis.provided.energy >= (nutritionalAnalysis.required.meKcalPerKg || 0) ? (
                 <span className="text-green-600 text-2xl">✓</span>
               ) : (
-                <span className="text-yellow-600 text-xs">
+                <span className="text-red-600 text-xs">
                   {nutritionalAnalysis.deficits.energy > 0 ? '+' : ''}
                   {nutritionalAnalysis.deficits.energy.toFixed(0)}
                 </span>
@@ -219,10 +286,10 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
                   Required: {nutritionalAnalysis.required.calcium || 0}%
                 </div>
               </div>
-              {Math.abs(nutritionalAnalysis.deficits.calcium) < 0.01 ? (
+              {nutritionalAnalysis.provided.calcium >= (nutritionalAnalysis.required.calcium || 0) ? (
                 <span className="text-green-600 text-2xl">✓</span>
               ) : (
-                <span className="text-yellow-600 text-xs">
+                <span className="text-red-600 text-xs">
                   {nutritionalAnalysis.deficits.calcium > 0 ? '+' : ''}
                   {nutritionalAnalysis.deficits.calcium.toFixed(3)}%
                 </span>
@@ -242,10 +309,10 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
                   Required: {nutritionalAnalysis.required.availablePhosphorus || 0}%
                 </div>
               </div>
-              {Math.abs(nutritionalAnalysis.deficits.phosphorus) < 0.01 ? (
+              {nutritionalAnalysis.provided.phosphorus >= (nutritionalAnalysis.required.availablePhosphorus || 0) ? (
                 <span className="text-green-600 text-2xl">✓</span>
               ) : (
-                <span className="text-yellow-600 text-xs">
+                <span className="text-red-600 text-xs">
                   {nutritionalAnalysis.deficits.phosphorus > 0 ? '+' : ''}
                   {nutritionalAnalysis.deficits.phosphorus.toFixed(3)}%
                 </span>
@@ -265,10 +332,10 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
                   Required: {nutritionalAnalysis.required.lysine || 0}%
                 </div>
               </div>
-              {Math.abs(nutritionalAnalysis.deficits.lysine) < 0.01 ? (
+              {nutritionalAnalysis.provided.lysine >= (nutritionalAnalysis.required.lysine || 0) ? (
                 <span className="text-green-600 text-2xl">✓</span>
               ) : (
-                <span className={`text-xs ${nutritionalAnalysis.deficits.lysine < 0 ? 'text-green-600' : 'text-yellow-600'}`}>
+                <span className="text-red-600 text-xs">
                   {nutritionalAnalysis.deficits.lysine > 0 ? '+' : ''}
                   {nutritionalAnalysis.deficits.lysine.toFixed(3)}%
                 </span>
@@ -288,10 +355,10 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
                   Required: {nutritionalAnalysis.required.methionine || 0}%
                 </div>
               </div>
-              {Math.abs(nutritionalAnalysis.deficits.methionine) < 0.01 ? (
+              {nutritionalAnalysis.provided.methionine >= (nutritionalAnalysis.required.methionine || 0) ? (
                 <span className="text-green-600 text-2xl">✓</span>
               ) : (
-                <span className="text-yellow-600 text-xs">
+                <span className="text-red-600 text-xs">
                   {nutritionalAnalysis.deficits.methionine > 0 ? '+' : ''}
                   {nutritionalAnalysis.deficits.methionine.toFixed(3)}%
                 </span>
@@ -311,7 +378,7 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
           <div className="bg-white p-4 rounded border">
             <h4 className="font-bold mb-2">Debug Info:</h4>
             <p>showStepByStep: {showStepByStep ? 'TRUE' : 'FALSE'}</p>
-            <p>Feed Weight: {formulation.feedBatchWeight} kg</p>
+            <p>Feed Weight: {editableBatchWeight} kg</p>
             <p>Species: {formulation.species}</p>
             <p>Phase: {formulation.phase}</p>
             <p>Ingredients: {results.originalIngredients ? results.originalIngredients.length : 0}</p>
@@ -320,7 +387,7 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
           <div className="mt-4 bg-blue-100 p-4 rounded">
             <h4 className="font-bold mb-2">Simple Step-by-Step Preview:</h4>
             <div className="space-y-2">
-              <div className="bg-white p-2 rounded">✅ Step 1: Input Data - {formulation.feedBatchWeight}kg batch</div>
+              <div className="bg-white p-2 rounded">✅ Step 1: Input Data - {editableBatchWeight}kg batch</div>
               <div className="bg-white p-2 rounded">✅ Step 2: Ingredient Selection - {results.originalIngredients?.length || 0} ingredients</div>
               <div className="bg-white p-2 rounded">✅ Step 3: Pearson's Square Method applied</div>
               <div className="bg-white p-2 rounded">✅ Step 4: Supplements added for deficits</div>
@@ -329,6 +396,13 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
           </div>
         </div>
       )}
+
+      {/* Detailed Calculation Table */}
+      <DetailedCalculationTable 
+        ingredients={updatedCalculation.ingredients}
+        nutritionalAnalysis={nutritionalAnalysis}
+        feedBatchWeight={editableBatchWeight}
+      />
 
       {/* Final Summary */}
       <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-4 border border-green-200">
@@ -362,7 +436,7 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
               <div className="mb-6 bg-blue-50 p-4 rounded-lg border border-blue-200">
                 <h3 className="text-lg font-semibold text-blue-800 mb-3">📝 Step 1: Input Data & Requirements</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div><strong>Feed Batch Weight:</strong> {formulation.feedBatchWeight} kg</div>
+                  <div><strong>Feed Batch Weight:</strong> {editableBatchWeight} kg</div>
                   <div><strong>Species:</strong> {formulation.species}</div>
                   <div><strong>Phase:</strong> {formulation.phase}</div>
                   <div><strong>Include Premix:</strong> Yes</div>
@@ -424,31 +498,51 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
                           <div className="text-sm">
                             {results.originalIngredients?.filter(ing => ing.category === 'Protein Source').map((ing, index) => (
                               <div key={index} className="text-xs">
-                                {ing.name}: {ing.crudeProtein}% CP
+                                {ing.name}: {(ing.crudeProtein ?? 0).toFixed(3)}% CP
                               </div>
                             ))}
                           </div>
                           <div className="font-bold text-blue-600 mt-1">
-                            Avg: {Math.round(results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0)}%
+                            Avg: {(
+                              (results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + (ing.crudeProtein ?? 0), 0) / 
+                               (results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 1)
+                              )
+                            ).toFixed(3)}%
                           </div>
                         </div>
                         
                         <div className="grid grid-cols-3 gap-2 text-center text-sm">
                           <div className="bg-blue-100 p-2 rounded border">
-                            <div className="font-bold">{results.formulation?.nutritionalAnalysis?.required?.crudeProtein}%</div>
+                            <div className="font-bold">
+                              {(results.formulation?.nutritionalAnalysis?.required?.crudeProtein ?? 0).toFixed(3)}%
+                            </div>
                             <div className="text-xs">Target CP</div>
                           </div>
                           <div className="bg-gray-100 p-2 rounded border">
                             <div className="font-bold">
-                              {Math.abs((results.formulation?.nutritionalAnalysis?.required?.crudeProtein || 0) - 
-                                Math.round(results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0))}%
+                              {Math.abs(
+                                (results.formulation?.nutritionalAnalysis?.required?.crudeProtein ?? 0)
+                                -
+                                (
+                                  (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + (ing.crudeProtein ?? 0), 0) /
+                                    (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 1)
+                                  )
+                                )
+                              ).toFixed(3)}%
                             </div>
                             <div className="text-xs">HPS Parts</div>
                           </div>
                           <div className="bg-green-100 p-2 rounded border">
                             <div className="font-bold">
-                              {Math.abs((results.formulation?.nutritionalAnalysis?.required?.crudeProtein || 0) - 
-                                Math.round(results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0))}%
+                              {Math.abs(
+                                (results.formulation?.nutritionalAnalysis?.required?.crudeProtein ?? 0)
+                                -
+                                (
+                                  (results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + (ing.crudeProtein ?? 0), 0) /
+                                    (results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 1)
+                                  )
+                                )
+                              ).toFixed(3)}%
                             </div>
                             <div className="text-xs">LPS Parts</div>
                           </div>
@@ -461,12 +555,16 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
                           <div className="text-sm">
                             {results.originalIngredients?.filter(ing => ing.category === 'Energy Source').map((ing, index) => (
                               <div key={index} className="text-xs">
-                                {ing.name}: {ing.crudeProtein}% CP
+                                {ing.name}: {(ing.crudeProtein ?? 0).toFixed(3)}% CP
                               </div>
                             ))}
                           </div>
                           <div className="font-bold text-green-600 mt-1">
-                            Avg: {Math.round(results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0)}%
+                            Avg: {(
+                              (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + (ing.crudeProtein ?? 0), 0) / 
+                               (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 1)
+                              )
+                            ).toFixed(3)}%
                           </div>
                         </div>
                       </div>
@@ -477,11 +575,24 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
                   <div className="mt-4 bg-gray-50 p-3 rounded border">
                     <h4 className="font-semibold text-purple-800 mb-2">📊 Calculation Steps:</h4>
                     <div className="text-sm space-y-1">
-                      <div><strong>Target Crude Protein:</strong> {results.formulation?.nutritionalAnalysis?.required?.crudeProtein}%</div>
-                      <div><strong>HPS Average CP:</strong> {Math.round(results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0)}%</div>
-                      <div><strong>LPS Average CP:</strong> {Math.round(results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0)}%</div>
-                      <div><strong>HPS Parts:</strong> {Math.abs((results.formulation?.nutritionalAnalysis?.required?.crudeProtein || 0) - Math.round(results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0))}%</div>
-                      <div><strong>LPS Parts:</strong> {Math.abs((results.formulation?.nutritionalAnalysis?.required?.crudeProtein || 0) - Math.round(results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0))}%</div>
+                      <div><strong>Original Requirement:</strong> {results.formulation?.nutritionalAnalysis?.required?.crudeProtein}%</div>
+                      <div><strong>Fixed Contribution:</strong> {((10 * 11) / 100).toFixed(2)}% (Rice Bran 10 parts × 11% CP)</div>
+                      <div><strong>Remaining Need:</strong> {(results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)).toFixed(2)}%</div>
+                      <div><strong>Adjusted Target (80 parts):</strong> {(((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100).toFixed(3)}%</div>
+                      <div><strong>HPS Average CP:</strong> {(results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0).toFixed(3)}%</div>
+                      <div><strong>LPS Average CP:</strong> {(results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0).toFixed(3)}%</div>
+                      
+                      <div className="mt-3 pt-3 border-t border-gray-300">
+                        <div><strong>HPS Difference:</strong> {(results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0).toFixed(3)}% - {(((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100).toFixed(3)}% = {((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)).toFixed(3)}</div>
+                        <div><strong>LPS Difference:</strong> {(((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100).toFixed(3)}% - {(results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0).toFixed(3)}% = {((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0)).toFixed(3)}</div>
+                        
+                        <div className="mt-3 pt-2 border-t border-gray-200">
+                          <div><strong>Scale to 80 parts:</strong></div>
+                          <div>LPS: {((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)).toFixed(3)} ÷ {(((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) + (((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0)))).toFixed(3)} × 80 = {((((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) / (((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) + (((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0))))) * 80).toFixed(3)}%</div>
+                          <div>HPS Total: {((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0)).toFixed(3)} ÷ {(((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) + (((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0)))).toFixed(3)} × 80 = {((((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0)) / (((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) + (((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0))))) * 80).toFixed(3)}%</div>
+                          {/* <div>LPS per each ingredient: {((((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0)) / (((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) + (((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0))))) * 80).toFixed(3)} ÷ {results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 1} = {((((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0)) / (((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) + (((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0))))) * 80 / (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 1)).toFixed(3)}% each</div> */}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -518,10 +629,13 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
                 <h3 className="text-lg font-semibold text-emerald-800 mb-3">🎯 Step 5: Final Formulation Results</h3>
                 <div className="space-y-2">
                   <h4 className="font-semibold mb-2">Final Ingredient List:</h4>
-                  {results.feedMixResult?.map((ingredient, index) => (
+                  {updatedCalculation.ingredients.map((ingredient, index) => (
                     <div key={index} className="flex justify-between items-center bg-white p-2 rounded border text-sm">
-                      <span>{ingredient.ingredient}</span>
-                      <span className="font-semibold">{ingredient.percentage}%</span>
+                      <span>{ingredient.name}</span>
+                      <div className="text-right">
+                        <div className="font-semibold">{ingredient.parts}%</div>
+                        <div className="text-xs text-gray-600">{ingredient.amountKg} kg</div>
+                      </div>
                     </div>
                   ))}
                 </div>
