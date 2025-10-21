@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import IngredientSelection from '../Login/IngredientSelection';
+import ResultsDisplay from '../Login/ResultsDisplay';
 
 const SharedSpeciesForm = ({ 
   speciesType, 
@@ -27,6 +28,8 @@ const SharedSpeciesForm = ({
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [selectedIngredients, setSelectedIngredients] = useState([]);
+  const [calculationResults, setCalculationResults] = useState(null);
+  const [isCalculating, setIsCalculating] = useState(false);
 
   // Check authentication on component mount
   useEffect(() => {
@@ -122,6 +125,7 @@ const SharedSpeciesForm = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setCalculationResults(null);
 
     // Validation
     if (!formData.feedBatchWeight || !formData.species) {
@@ -135,9 +139,107 @@ const SharedSpeciesForm = ({
       return;
     }
 
-    // Here you can add your form submission logic
-    console.log('Form submitted:', formData);
-    console.log('Selected ingredients:', selectedIngredients);
+    if (selectedIngredients.length === 0) {
+      setError('Please select at least one ingredient');
+      return;
+    }
+
+    // Call calculation API
+    try {
+      setIsCalculating(true);
+      const token = localStorage.getItem('authToken');
+      
+      const response = await fetch('http://localhost:3001/api/feedFormulations/calculate', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          feedBatchWeight: formData.feedBatchWeight,
+          species: formData.species,
+          subspecies: formData.subspecies,
+          animalType: formData.animalType,
+          phase: formData.phase,
+          includePremix: formData.includePremix,
+          availableIngredients: selectedIngredients
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Calculation failed');
+      }
+
+      setCalculationResults({
+        ...data,
+        originalIngredients: selectedIngredients
+      });
+      setError('');
+      
+      // Scroll to results
+      setTimeout(() => {
+        const resultsElement = document.getElementById('calculation-results');
+        if (resultsElement) {
+          resultsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+
+    } catch (err) {
+      console.error('Calculation error:', err);
+      setError(err.message || 'Failed to calculate formulation. Please try again.');
+    } finally {
+      setIsCalculating(false);
+    }
+  };
+
+  const handleSaveFormulation = async () => {
+    if (!calculationResults) return;
+
+    try {
+      const token = localStorage.getItem('authToken');
+      const { formulation } = calculationResults;
+
+      const response = await fetch('http://localhost:3001/api/feedFormulations', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          feedBatchWeight: formulation.feedBatchWeight,
+          species: formulation.species,
+          subspecies: formulation.subspecies,
+          animalType: formulation.animalType,
+          phase: formulation.phase,
+          crudeProtein: formulation.nutritionalAnalysis.provided.crudeProtein,
+          energy: formulation.nutritionalAnalysis.provided.energy,
+          includePremix: true,
+          ingredients: formulation.ingredients.map(ing => ({
+            ingredientId: ing.ingredientId,
+            percentage: ing.parts,
+            cost: ing.cost || 0
+          }))
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save formulation');
+      }
+
+      alert('Formulation saved successfully! ✅');
+    } catch (err) {
+      console.error('Save error:', err);
+      alert('Failed to save formulation: ' + err.message);
+    }
+  };
+
+  const handleResetCalculation = () => {
+    setCalculationResults(null);
+    setError('');
   };
 
   return (
@@ -380,9 +482,24 @@ const SharedSpeciesForm = ({
               <button
                 style={{padding:'10px 16px'}} 
                 type="submit"
-                className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transform transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300"
+                disabled={isCalculating}
+                className={`${
+                  isCalculating 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-green-600 hover:bg-green-700'
+                } text-white font-bold py-3 px-8 rounded-lg shadow-lg transform transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300`}
               >
-                Calculate Feed Formulation
+                {isCalculating ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Calculating...
+                  </span>
+                ) : (
+                  'Calculate Feed Formulation'
+                )}
               </button>
             </div>
           </div>
@@ -394,6 +511,17 @@ const SharedSpeciesForm = ({
                 console.log('Selected ingredients:', ingredients);
               }}
             />
+
+            {/* Results Display Section */}
+            <div id="calculation-results">
+              {calculationResults && (
+                <ResultsDisplay 
+                  results={calculationResults}
+                  onSave={handleSaveFormulation}
+                  onReset={handleResetCalculation}
+                />
+              )}
+            </div>
            
           </form>
         </div>
