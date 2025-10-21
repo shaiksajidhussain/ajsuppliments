@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 
 const IngredientManagement = () => {
   const [ingredients, setIngredients] = useState([]);
+  const [filteredIngredients, setFilteredIngredients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [editingIngredient, setEditingIngredient] = useState(null);
   const [formError, setFormError] = useState(null);
   const [speciesData, setSpeciesData] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     category: '',
@@ -41,6 +44,27 @@ const IngredientManagement = () => {
     fetchIngredients();
     fetchSpeciesData();
   }, []);
+
+  // Filter ingredients based on search term and category
+  useEffect(() => {
+    let filtered = ingredients;
+
+    // Filter by search term
+    if (searchTerm) {
+      filtered = filtered.filter(ingredient =>
+        ingredient.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Filter by category
+    if (selectedCategory) {
+      filtered = filtered.filter(ingredient =>
+        ingredient.category === selectedCategory
+      );
+    }
+
+    setFilteredIngredients(filtered);
+  }, [ingredients, searchTerm, selectedCategory]);
 
   const fetchSpeciesData = async () => {
     try {
@@ -261,6 +285,91 @@ const IngredientManagement = () => {
         </button>
       </div>
 
+      {/* Search and Filter Controls */}
+      <div className="search-filter-container" style={{
+        display: 'flex',
+        gap: '1rem',
+        marginBottom: '2rem',
+        padding: '1rem',
+        backgroundColor: '#f8f9fa',
+        borderRadius: '0.5rem',
+        border: '1px solid #e9ecef'
+      }}>
+        <div style={{ flex: 1 }}>
+          <label style={{ 
+            display: 'block', 
+            marginBottom: '0.5rem', 
+            fontWeight: '600', 
+            color: '#495057' 
+          }}>
+            Search Ingredients:
+          </label>
+          <input
+            type="text"
+            placeholder="Search by ingredient name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              border: '1px solid #ced4da',
+              borderRadius: '0.375rem',
+              fontSize: '0.875rem'
+            }}
+          />
+        </div>
+        
+        <div style={{ flex: 1 }}>
+          <label style={{ 
+            display: 'block', 
+            marginBottom: '0.5rem', 
+            fontWeight: '600', 
+            color: '#495057' 
+          }}>
+            Filter by Category:
+          </label>
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              border: '1px solid #ced4da',
+              borderRadius: '0.375rem',
+              fontSize: '0.875rem',
+              backgroundColor: 'white'
+            }}
+          >
+            <option value="">All Categories</option>
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+        </div>
+        
+        <div style={{ display: 'flex', alignItems: 'end' }}>
+          <button
+            onClick={() => {
+              setSearchTerm('');
+              setSelectedCategory('');
+            }}
+            style={{
+              padding: '0.75rem 1rem',
+              backgroundColor: '#6c757d',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0.375rem',
+              cursor: 'pointer',
+              fontSize: '0.875rem'
+            }}
+          >
+            Clear Filters
+          </button>
+        </div>
+      </div>
+
       {showForm && (
         <div className="species-form">
           <h3 style={{ fontSize: '1.25rem', fontWeight: '600', color: '#2d3748', margin: '0 0 1rem 0' }}>
@@ -479,7 +588,7 @@ const IngredientManagement = () => {
 
       {/* Ingredients Grid */}
       <div className="ingredient-grid">
-        {ingredients.map((ingredient) => {
+        {filteredIngredients.map((ingredient) => {
           const species = speciesData.find(s => s.id === ingredient.speciesId);
           const isPoultry = species?.name?.toLowerCase() === 'poultry';
           
@@ -579,6 +688,12 @@ const IngredientManagement = () => {
           );
         })}
       </div>
+      
+      {filteredIngredients.length === 0 && ingredients.length > 0 && (
+        <div className="empty-state">
+          <p>No ingredients found matching your search criteria. Try adjusting your filters.</p>
+        </div>
+      )}
       
       {ingredients.length === 0 && (
         <div className="empty-state">

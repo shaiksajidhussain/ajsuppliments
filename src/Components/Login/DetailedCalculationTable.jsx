@@ -55,85 +55,98 @@ const DetailedCalculationTable = ({ ingredients, nutritionalAnalysis, feedBatchW
 
   return (
     <div className="bg-white/95 backdrop-blur-sm rounded-lg p-6 shadow-xl border border-white/20 mt-8">
-      <h3 className="text-2xl font-bold text-gray-900 mb-6">📊 Detailed Nutrient Calculation</h3>
+      <h3 className="text-2xl font-bold text-gray-900 mb-6">📊 Nutrient Calculations</h3>
       
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse border border-gray-300">
+        <table className="w-full border-collapse border border-gray-300 text-sm">
           <thead>
             <tr className="bg-gray-100">
-              <th className="border border-gray-300 px-4 py-2 text-left">Ingredients</th>
-              <th className="border border-gray-300 px-4 py-2 text-center">Parts</th>
-              <th className="border border-gray-300 px-4 py-2 text-center">ME (Kcal/kg)</th>
-              <th className="border border-gray-300 px-4 py-2 text-center">CP%</th>
-              <th className="border border-gray-300 px-4 py-2 text-center">Ca%</th>
-              <th className="border border-gray-300 px-4 py-2 text-center">P%</th>
-              <th className="border border-gray-300 px-4 py-2 text-center">Lysine</th>
-              <th className="border border-gray-300 px-4 py-2 text-center">Methionine</th>
+              <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Ingredients</th>
+              <th className="border border-gray-300 px-3 py-2 text-center font-semibold">Parts</th>
+              <th className="border border-gray-300 px-3 py-2 text-center font-semibold">ME (Kcal/kg)</th>
+              <th className="border border-gray-300 px-3 py-2 text-center font-semibold">CP%</th>
+              <th className="border border-gray-300 px-3 py-2 text-center font-semibold">Ca%</th>
+              <th className="border border-gray-300 px-3 py-2 text-center font-semibold">Available P%</th>
+              <th className="border border-gray-300 px-3 py-2 text-center font-semibold">Lysine%</th>
+              <th className="border border-gray-300 px-3 py-2 text-center font-semibold">Methionine%</th>
             </tr>
           </thead>
           <tbody>
             {detailedData.map((item, index) => (
-              <tr key={index} className={item.name.includes('Rice Bran') && item.name.includes('Fixed') ? 'bg-yellow-50' : 'bg-white'}>
-                <td className="border border-gray-300 px-4 py-2">
+              <tr key={index} className={item.name.includes('Rice') ? 'bg-yellow-50' : 'bg-white'}>
+                <td className="border border-gray-300 px-3 py-2 font-medium">
                   {item.name}
-                  {item.name.includes('Rice Bran') && item.name.includes('Fixed') && (
+                  {item.name.includes('Rice') && (
                     <span className="ml-2 text-xs text-yellow-700 font-medium">(Fixed)</span>
                   )}
                 </td>
-                <td className="border border-gray-300 px-4 py-2 text-center font-medium">{item.parts}</td>
-                <td className="border border-gray-300 px-4 py-2 text-center">{item.contributions.energy.toFixed(1)}</td>
-                <td className="border border-gray-300 px-4 py-2 text-center">{item.contributions.crudeProtein.toFixed(2)}</td>
-                <td className="border border-gray-300 px-4 py-2 text-center">{item.contributions.calcium.toFixed(3)}</td>
-                <td className="border border-gray-300 px-4 py-2 text-center">{item.contributions.phosphorus.toFixed(3)}</td>
-                <td className="border border-gray-300 px-4 py-2 text-center">{item.contributions.lysine.toFixed(3)}</td>
-                <td className="border border-gray-300 px-4 py-2 text-center">{item.contributions.methionine.toFixed(3)}</td>
+                <td className="border border-gray-300 px-3 py-2 text-center font-medium">{item.parts.toFixed(2)}</td>
+                <td className="border border-gray-300 px-3 py-2 text-center">{item.contributions.energy.toFixed(2)}</td>
+                <td className="border border-gray-300 px-3 py-2 text-center">{item.contributions.crudeProtein.toFixed(2)}</td>
+                <td className="border border-gray-300 px-3 py-2 text-center">{item.contributions.calcium.toFixed(3)}</td>
+                <td className="border border-gray-300 px-3 py-2 text-center">{item.contributions.phosphorus.toFixed(3)}</td>
+                <td className="border border-gray-300 px-3 py-2 text-center">{item.contributions.lysine.toFixed(3)}</td>
+                <td className="border border-gray-300 px-3 py-2 text-center">{item.contributions.methionine.toFixed(3)}</td>
               </tr>
             ))}
             
             {/* Total Row */}
             <tr className="bg-blue-50 font-bold">
-              <td className="border border-gray-300 px-4 py-2">Total</td>
-              <td className="border border-gray-300 px-4 py-2 text-center">{detailedData.reduce((sum, item) => sum + item.parts, 0).toFixed(1)}</td>
-              <td className="border border-gray-300 px-4 py-2 text-center">{totals.energy.toFixed(1)}</td>
-              <td className="border border-gray-300 px-4 py-2 text-center">{totals.crudeProtein.toFixed(2)}</td>
-              <td className="border border-gray-300 px-4 py-2 text-center">{totals.calcium.toFixed(3)}</td>
-              <td className="border border-gray-300 px-4 py-2 text-center">{totals.phosphorus.toFixed(3)}</td>
-              <td className="border border-gray-300 px-4 py-2 text-center">{totals.lysine.toFixed(3)}</td>
-              <td className="border border-gray-300 px-4 py-2 text-center">{totals.methionine.toFixed(3)}</td>
+              <td className="border border-gray-300 px-3 py-2 font-bold">Total</td>
+              <td className="border border-gray-300 px-3 py-2 text-center font-bold">{detailedData.reduce((sum, item) => sum + item.parts, 0).toFixed(2)}</td>
+              <td className="border border-gray-300 px-3 py-2 text-center font-bold">{totals.energy.toFixed(2)}</td>
+              <td className="border border-gray-300 px-3 py-2 text-center font-bold">{totals.crudeProtein.toFixed(2)}</td>
+              <td className="border border-gray-300 px-3 py-2 text-center font-bold">{totals.calcium.toFixed(3)}</td>
+              <td className="border border-gray-300 px-3 py-2 text-center font-bold">{totals.phosphorus.toFixed(3)}</td>
+              <td className="border border-gray-300 px-3 py-2 text-center font-bold">{totals.lysine.toFixed(3)}</td>
+              <td className="border border-gray-300 px-3 py-2 text-center font-bold">{totals.methionine.toFixed(3)}</td>
             </tr>
             
             {/* Required Row */}
-            <tr className="bg-green-50 font-semibold">
-              <td className="border border-gray-300 px-4 py-2">Required</td>
-              <td className="border border-gray-300 px-4 py-2 text-center">100</td>
-              <td className="border border-gray-300 px-4 py-2 text-center">{nutritionalAnalysis.required.meKcalPerKg || 0}</td>
-              <td className="border border-gray-300 px-4 py-2 text-center">{nutritionalAnalysis.required.crudeProtein || 0}</td>
-              <td className="border border-gray-300 px-4 py-2 text-center">{nutritionalAnalysis.required.calcium || 0}</td>
-              <td className="border border-gray-300 px-4 py-2 text-center">{nutritionalAnalysis.required.availablePhosphorus || 0}</td>
-              <td className="border border-gray-300 px-4 py-2 text-center">{nutritionalAnalysis.required.lysine || 0}</td>
-              <td className="border border-gray-300 px-4 py-2 text-center">{nutritionalAnalysis.required.methionine || 0}</td>
+            <tr className="bg-green-50 font-bold">
+              <td className="border border-gray-300 px-3 py-2 font-bold">Requirement</td>
+              <td className="border border-gray-300 px-3 py-2 text-center font-bold">100</td>
+              <td className="border border-gray-300 px-3 py-2 text-center font-bold">{nutritionalAnalysis.required.meKcalPerKg || 0}</td>
+              <td className="border border-gray-300 px-3 py-2 text-center font-bold">{nutritionalAnalysis.required.crudeProtein || 0}</td>
+              <td className="border border-gray-300 px-3 py-2 text-center font-bold">{nutritionalAnalysis.required.calcium || 0}</td>
+              <td className="border border-gray-300 px-3 py-2 text-center font-bold">{nutritionalAnalysis.required.availablePhosphorus || 0}</td>
+              <td className="border border-gray-300 px-3 py-2 text-center font-bold">{nutritionalAnalysis.required.lysine || 0}</td>
+              <td className="border border-gray-300 px-3 py-2 text-center font-bold">{nutritionalAnalysis.required.methionine || 0}</td>
             </tr>
             
             {/* Deficit Row */}
-            <tr className="bg-red-50 font-semibold">
-              <td className="border border-gray-300 px-4 py-2">Deficit</td>
-              <td className="border border-gray-300 px-4 py-2 text-center">
-                {(100 - detailedData.reduce((sum, item) => sum + item.parts, 0)).toFixed(1)}
+            <tr className="bg-red-50 font-bold">
+              <td className="border border-gray-300 px-3 py-2 font-bold">Deficit</td>
+              <td className="border border-gray-300 px-3 py-2 text-center font-bold">
+                {(100 - detailedData.reduce((sum, item) => sum + item.parts, 0)).toFixed(2)}
               </td>
-              <td className="border border-gray-300 px-4 py-2 text-center">{deficits.energy.toFixed(1)}</td>
-              <td className="border border-gray-300 px-4 py-2 text-center">{deficits.crudeProtein.toFixed(2)}</td>
-              <td className="border border-gray-300 px-4 py-2 text-center">{deficits.calcium.toFixed(3)}</td>
-              <td className="border border-gray-300 px-4 py-2 text-center">{deficits.phosphorus.toFixed(3)}</td>
-              <td className="border border-gray-300 px-4 py-2 text-center">{deficits.lysine.toFixed(3)}</td>
-              <td className="border border-gray-300 px-4 py-2 text-center">{deficits.methionine.toFixed(3)}</td>
+              <td className={`border border-gray-300 px-3 py-2 text-center font-bold ${deficits.energy > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                {deficits.energy.toFixed(2)}
+              </td>
+              <td className={`border border-gray-300 px-3 py-2 text-center font-bold ${deficits.crudeProtein > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                {deficits.crudeProtein.toFixed(2)}
+              </td>
+              <td className={`border border-gray-300 px-3 py-2 text-center font-bold ${deficits.calcium > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                {deficits.calcium.toFixed(3)}
+              </td>
+              <td className={`border border-gray-300 px-3 py-2 text-center font-bold ${deficits.phosphorus > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                {deficits.phosphorus.toFixed(3)}
+              </td>
+              <td className={`border border-gray-300 px-3 py-2 text-center font-bold ${deficits.lysine > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                {deficits.lysine.toFixed(3)}
+              </td>
+              <td className={`border border-gray-300 px-3 py-2 text-center font-bold ${deficits.methionine > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                {deficits.methionine.toFixed(3)}
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
       
       <div className="mt-4 text-sm text-gray-600">
-        <p><strong>Note:</strong> This table shows the detailed nutrient contributions from each ingredient, 
-        calculated using the formula: (Parts × Nutrient%) ÷ 100</p>
+        <p><strong>Calculation Formula:</strong> (Parts × Nutrient%) ÷ 100</p>
+        <p><strong>Example:</strong> Rice Polish ME = 10 × 2750 ÷ 100 = 275 Kcal/kg</p>
+        <p><strong>Color Coding:</strong> <span className="text-red-600">Red</span> = Deficit, <span className="text-green-600">Green</span> = Surplus</p>
       </div>
     </div>
   );

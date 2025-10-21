@@ -174,9 +174,12 @@ const StepByStepCalculation = ({ calculationData, results }) => {
             <div><strong>({lpsDiff.toFixed(3)} ÷ {totalRatio.toFixed(3)}) × 80% = {lpsParts.toFixed(3)}%</strong></div>
             <div className="mt-2 pt-2 border-t border-gray-300">
               <div><strong>Scale to 80 parts:</strong></div>
-              <div>LPS: {hpsDiff.toFixed(3)} ÷ {totalRatio.toFixed(3)} × 80 = {hpsParts.toFixed(3)}%</div>
-              <div>LPS Total: {lpsDiff.toFixed(3)} ÷ {totalRatio.toFixed(3)} × 80 = {lpsParts.toFixed(3)}%</div>
+              <div>HPS Total: {lpsDiff.toFixed(3)} ÷ {totalRatio.toFixed(3)} × 80 = {hpsParts.toFixed(3)}%</div>
+              <div>LPS Total: {hpsDiff.toFixed(3)} ÷ {totalRatio.toFixed(3)} × 80 = {lpsParts.toFixed(3)}%</div>
               <div>LPS per ingredient: {lpsParts.toFixed(3)} ÷ {energySources.length} = {(lpsParts / energySources.length).toFixed(3)}% each</div>
+              <div className="mt-2 text-sm text-blue-600">
+                <div>LPS Division: {lpsParts.toFixed(3)}% ÷ 2 = {(lpsParts / 2).toFixed(3)}% each (Jowar & Maize)</div>
+              </div>
             </div>
           </div>
         </div>
