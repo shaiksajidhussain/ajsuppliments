@@ -4,7 +4,7 @@ import TestStepByStep from '../Calculation/TestStepByStep';
 import DetailedCalculationTable from './DetailedCalculationTable';
 
 const ResultsDisplay = ({ results, onSave, onReset }) => {
-  const [showStepByStep, setShowStepByStep] = useState(false);
+  const [showStepByStep] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editableBatchWeight, setEditableBatchWeight] = useState(results?.formulation?.feedBatchWeight || 100);
   
@@ -76,20 +76,7 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
           🎯 Formulation Results
         </h2>
         <div className="flex gap-4">
-          <button
-            onClick={() => {
-              console.log('Step-by-step button clicked! Current state:', showStepByStep);
-              setShowStepByStep(!showStepByStep);
-              console.log('New state will be:', !showStepByStep);
-            }}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              showStepByStep 
-                ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                : 'bg-blue-500 text-white hover:bg-blue-600'
-            }`}
-          >
-            {showStepByStep ? '📊 Hide Steps' : '🔍 Show Step-by-Step'}
-          </button>
+       
           <button
             onClick={onReset}
             className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
@@ -432,6 +419,56 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
             </div>
             
             <div className="p-6">
+              {/* Calculate remaining parts and Pearson's Square values dynamically */}
+              {(() => {
+                // Check for any Medium Source ingredient as fixed ingredient
+                const mediumSource = results.originalIngredients?.find(ing => ing.category === 'Medium Source');
+                const fixedIngredient = results.originalIngredients?.find(ing => ing.isFixed) || mediumSource;
+                const fixedParts = (fixedIngredient || mediumSource) ? 10 : 0;
+                const remainingParts = 100 - 10 - fixedParts; // 10% slack space, rest for main ingredients
+                
+                // Debug logging
+                console.log('Debug - mediumSource:', mediumSource);
+                console.log('Debug - fixedIngredient:', fixedIngredient);
+                console.log('Debug - results.originalIngredients:', results.originalIngredients);
+                
+                // Calculate Pearson's Square values
+                const actualFixedIngredient = fixedIngredient || mediumSource;
+                const fixedContribution = actualFixedIngredient ? (10 * actualFixedIngredient.crudeProtein) / 100 : 0;
+                const remainingNeed = results.formulation?.nutritionalAnalysis?.required?.crudeProtein - fixedContribution;
+                const adjustedTarget = (remainingNeed / remainingParts) * 100;
+                
+                // Debug logging for calculations
+                console.log('Debug - actualFixedIngredient:', actualFixedIngredient);
+                console.log('Debug - fixedContribution:', fixedContribution);
+                console.log('Debug - remainingNeed:', remainingNeed);
+                console.log('Debug - adjustedTarget:', adjustedTarget);
+                
+                const lpsAvgCP = results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + (ing.crudeProtein ?? 0), 0) / (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 1);
+                const hpsAvgCP = results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + (ing.crudeProtein ?? 0), 0) / (results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 1);
+                
+                const lpsDiff = adjustedTarget - lpsAvgCP;
+                const hpsDiff = hpsAvgCP - adjustedTarget;
+                const totalRatio = hpsDiff + lpsDiff;
+                const hpsParts = totalRatio > 0 ? (lpsDiff / totalRatio) * remainingParts : 0;
+                const lpsParts = totalRatio > 0 ? (hpsDiff / totalRatio) * remainingParts : 0;
+                
+                // Debug logging for final calculations
+                console.log('Debug - lpsAvgCP:', lpsAvgCP);
+                console.log('Debug - hpsAvgCP:', hpsAvgCP);
+                console.log('Debug - lpsDiff:', lpsDiff);
+                console.log('Debug - hpsDiff:', hpsDiff);
+                console.log('Debug - totalRatio:', totalRatio);
+                console.log('Debug - hpsParts:', hpsParts);
+                console.log('Debug - lpsParts:', lpsParts);
+                
+                // Store in window for use in calculations
+                window.pearsonData = {
+                  fixedIngredient, fixedParts, remainingParts, fixedContribution, remainingNeed, adjustedTarget,
+                  lpsAvgCP, hpsAvgCP, lpsDiff, hpsDiff, totalRatio, hpsParts, lpsParts
+                };
+              })()}
+              
               {/* Step 1: Input Data */}
               <div className="mb-6 bg-blue-50 p-4 rounded-lg border border-blue-200">
                 <h3 className="text-lg font-semibold text-blue-800 mb-3">📝 Step 1: Input Data & Requirements</h3>
@@ -514,31 +551,19 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
                         <div className="grid grid-cols-3 gap-2 text-center text-sm">
                           <div className="bg-blue-100 p-2 rounded border">
                             <div className="font-bold">
-                              {((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein ?? 0) - (10 * 11 / 100)) / 80) * 100).toFixed(3)}%
+                              {window.pearsonData?.adjustedTarget.toFixed(3)}%
                             </div>
                             <div className="text-xs">Adjusted Target CP</div>
                           </div>
                           <div className="bg-gray-100 p-2 rounded border">
                             <div className="font-bold">
-                              {Math.abs(
-                                (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein ?? 0) - (10 * 11 / 100)) / 80) * 100
-                                -
-                                (
-                                  (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + (ing.crudeProtein ?? 0), 0) /
-                                    (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 1)
-                                  )
-                                )
-                              ).toFixed(3)}%
+                              {window.pearsonData?.hpsParts.toFixed(3)}%
                             </div>
                             <div className="text-xs">HPS Parts</div>
                           </div>
                           <div className="bg-green-100 p-2 rounded border">
                             <div className="font-bold">
-                              {Math.abs(
-                                (results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + (ing.crudeProtein ?? 0), 0) / (results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 1))
-                                -
-                                (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein ?? 0) - (10 * 11 / 100)) / 80) * 100
-                              ).toFixed(3)}%
+                              {window.pearsonData?.lpsParts.toFixed(3)}%
                             </div>
                             <div className="text-xs">LPS Parts</div>
                           </div>
@@ -572,23 +597,29 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
                     <h4 className="font-semibold text-purple-800 mb-2">📊 Calculation Steps:</h4>
                     <div className="text-sm space-y-1">
                       <div><strong>Original Requirement:</strong> {results.formulation?.nutritionalAnalysis?.required?.crudeProtein}%</div>
-                      <div><strong>Fixed Contribution:</strong> {((10 * 11) / 100).toFixed(2)}% (Rice Bran 10 parts × 11% CP)</div>
-                      <div><strong>Remaining Need:</strong> {(results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)).toFixed(2)}%</div>
-                      <div><strong>Adjusted Target (80 parts):</strong> {(((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100).toFixed(3)}%</div>
-                      <div><strong>HPS Average CP:</strong> {(results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0).toFixed(3)}%</div>
-                      <div><strong>LPS Average CP:</strong> {(results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0).toFixed(3)}%</div>
+                      <div><strong>Fixed Contribution:</strong> {(() => {
+              const fixedIngredient = window.pearsonData?.fixedIngredient;
+              if (fixedIngredient) {
+                return `${window.pearsonData.fixedContribution.toFixed(2)}% (${fixedIngredient.name} 10 parts × ${fixedIngredient.crudeProtein}% CP)`;
+              }
+              return '0.00% (No Medium Source selected)';
+            })()}</div>
+                      <div><strong>Remaining Need:</strong> {isNaN(window.pearsonData?.remainingNeed) ? '0.00' : window.pearsonData?.remainingNeed.toFixed(2)}%</div>
+                      <div><strong>Adjusted Target ({window.pearsonData?.remainingParts} parts):</strong> {isNaN(window.pearsonData?.adjustedTarget) ? '0.000' : window.pearsonData?.adjustedTarget.toFixed(3)}%</div>
+                      <div><strong>HPS Average CP:</strong> {isNaN(window.pearsonData?.hpsAvgCP) ? '0.000' : window.pearsonData?.hpsAvgCP.toFixed(3)}%</div>
+                      <div><strong>LPS Average CP:</strong> {isNaN(window.pearsonData?.lpsAvgCP) ? '0.000' : window.pearsonData?.lpsAvgCP.toFixed(3)}%</div>
                       
                       <div className="mt-3 pt-3 border-t border-gray-300">
-                        <div><strong>HPS Difference:</strong> {(results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0).toFixed(3)}% - {(((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100).toFixed(3)}% = {((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)).toFixed(3)}</div>
-                        <div><strong>LPS Difference:</strong> {(((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100).toFixed(3)}% - {(results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0).toFixed(3)}% = {((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0)).toFixed(3)}</div>
+                        <div><strong>HPS Difference:</strong> {isNaN(window.pearsonData?.hpsAvgCP) ? '0.000' : window.pearsonData?.hpsAvgCP.toFixed(3)}% - {isNaN(window.pearsonData?.adjustedTarget) ? '0.000' : window.pearsonData?.adjustedTarget.toFixed(3)}% = {isNaN(window.pearsonData?.hpsDiff) ? '0.000' : window.pearsonData?.hpsDiff.toFixed(3)}</div>
+                        <div><strong>LPS Difference:</strong> {isNaN(window.pearsonData?.adjustedTarget) ? '0.000' : window.pearsonData?.adjustedTarget.toFixed(3)}% - {isNaN(window.pearsonData?.lpsAvgCP) ? '0.000' : window.pearsonData?.lpsAvgCP.toFixed(3)}% = {isNaN(window.pearsonData?.lpsDiff) ? '0.000' : window.pearsonData?.lpsDiff.toFixed(3)}</div>
                         
                         <div className="mt-3 pt-2 border-t border-gray-200">
-                          <div><strong>Scale to 80 parts:</strong></div>
-                          <div>HPS Total: {((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0)).toFixed(3)} ÷ {(((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) + (((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0)))).toFixed(3)} × 80 = {((((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0)) / (((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) + (((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0))))) * 80).toFixed(3)}%</div>
-                          <div>LPS Total: {((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)).toFixed(3)} ÷ {(((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) + (((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0)))).toFixed(3)} × 80 = {((((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) / (((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) + (((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0))))) * 80).toFixed(3)}%</div>
-                          <div className="mt-2 text-sm text-blue-600">
+                          <div><strong>Scale to {window.pearsonData?.remainingParts} parts:</strong></div>
+                          <div>HPS Total: {isNaN(window.pearsonData?.lpsDiff) ? '0.000' : window.pearsonData?.lpsDiff.toFixed(3)} ÷ {isNaN(window.pearsonData?.totalRatio) ? '0.000' : window.pearsonData?.totalRatio.toFixed(3)} × {window.pearsonData?.remainingParts} = {isNaN(window.pearsonData?.hpsParts) ? '0.000' : window.pearsonData?.hpsParts.toFixed(3)}%</div>
+                          <div>LPS Total: {isNaN(window.pearsonData?.hpsDiff) ? '0.000' : window.pearsonData?.hpsDiff.toFixed(3)} ÷ {isNaN(window.pearsonData?.totalRatio) ? '0.000' : window.pearsonData?.totalRatio.toFixed(3)} × {window.pearsonData?.remainingParts} = {isNaN(window.pearsonData?.lpsParts) ? '0.000' : window.pearsonData?.lpsParts.toFixed(3)}%</div>
+                          {/* <div className="mt-2 text-sm text-blue-600">
                             <div>LPS Division: {((((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) / (((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) + (((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0))))) * 80).toFixed(3)}% ÷ 2 = {((((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) / (((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) + (((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0))))) * 80 / 2).toFixed(3)}% each (Jowar & Maize)</div>
-                          </div>
+                          </div> */}
                           {/* <div>LPS per each ingredient: {((((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0)) / (((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) + (((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0))))) * 80).toFixed(3)} ÷ {results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 1} = {((((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0)) / (((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) + (((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0))))) * 80 / (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 1)).toFixed(3)}% each</div> */}
                         </div>
                       </div>
@@ -658,6 +689,9 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
           </div>
         </div>
       )}
+
+
+      
     </div>
   );
 };
