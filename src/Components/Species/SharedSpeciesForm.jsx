@@ -146,6 +146,10 @@ const SharedSpeciesForm = ({
 
     // Call calculation API
     try {
+      console.log('🚀 About to call API with ingredients:', selectedIngredients);
+      console.log('🚀 Selected ingredients count:', selectedIngredients.length);
+      console.log('🚀 Selected ingredients details:', selectedIngredients.map(ing => ({ id: ing.id, name: ing.name, category: ing.category })));
+      
       setIsCalculating(true);
       const token = localStorage.getItem('authToken');
       
@@ -507,6 +511,9 @@ const SharedSpeciesForm = ({
             {/* Select Ingredients Section */}
             <IngredientSelection  className='mt-10'
               onIngredientsChange={(ingredients) => {
+                console.log('🎯 Parent received ingredients:', ingredients);
+                console.log('🎯 Ingredients count:', ingredients.length);
+                console.log('🎯 Ingredients details:', ingredients.map(ing => ({ id: ing.id, name: ing.name, category: ing.category })));
                 setSelectedIngredients(ingredients);
                 console.log('Selected ingredients:', ingredients);
               }}

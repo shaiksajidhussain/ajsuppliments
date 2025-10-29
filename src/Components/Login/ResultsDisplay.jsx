@@ -92,6 +92,40 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
         </div>
       </div>
 
+      {/* Inclusion Limit Warnings */}
+      {results.inclusionWarnings && results.inclusionWarnings.length > 0 && (
+        <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex items-center mb-3">
+            <span className="text-2xl mr-2">⚠️</span>
+            <h3 className="text-lg font-semibold text-yellow-800">Inclusion Limit Warnings</h3>
+          </div>
+          <div className="space-y-2">
+            {results.inclusionWarnings.map((warning, index) => (
+              <div key={index} className="bg-white p-3 rounded border text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-red-600">{warning.ingredient}</span>
+                  <span className="text-gray-600">
+                    {warning.type === 'above_maximum' ? 'Exceeds maximum' : 'Below minimum'}
+                  </span>
+                </div>
+                <div className="mt-1 text-gray-700">
+                  {warning.message}
+                </div>
+                <div className="mt-1 text-xs text-gray-500">
+                  {warning.type === 'above_maximum' 
+                    ? `Calculated: ${warning.actual}% → Adjusted to: ${warning.maximum}%`
+                    : `Calculated: ${warning.actual}% → Adjusted to: ${warning.minimum}%`
+                  }
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 text-sm text-yellow-700 bg-yellow-100 p-2 rounded">
+            <strong>Note:</strong> The formulation has been automatically adjusted to meet safety limits.
+          </div>
+        </div>
+      )}
+
       {/* Step-by-Step Button */}
       <div className="mb-4 flex justify-center">
         <button 
@@ -134,6 +168,13 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
           <div className="text-2xl font-bold text-purple-900">{ingredients.length}</div>
           <div className="text-xs text-purple-600">{mainIngredients.length} main + {supplements.length} supplements</div>
         </div>
+        {results.hasInclusionViolations && (
+          <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+            <div className="text-sm text-yellow-600 font-medium">⚠️ Safety Limits Applied</div>
+            <div className="text-2xl font-bold text-yellow-900">{results.inclusionWarnings?.length || 0}</div>
+            <div className="text-xs text-yellow-600">ingredients adjusted</div>
+          </div>
+        )}
       </div>
 
       {/* Main Ingredients Table */}
@@ -444,8 +485,8 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
                 console.log('Debug - remainingNeed:', remainingNeed);
                 console.log('Debug - adjustedTarget:', adjustedTarget);
                 
-                const lpsAvgCP = results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + (ing.crudeProtein ?? 0), 0) / (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 1);
-                const hpsAvgCP = results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + (ing.crudeProtein ?? 0), 0) / (results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 1);
+                const lpsAvgCP = results.originalIngredients?.filter(ing => ing.category === 'Energy Sources').reduce((sum, ing) => sum + (ing.crudeProtein ?? 0), 0) / (results.originalIngredients?.filter(ing => ing.category === 'Energy Sources').length || 1);
+                const hpsAvgCP = results.originalIngredients?.filter(ing => ing.category === 'Protein Sources').reduce((sum, ing) => sum + (ing.crudeProtein ?? 0), 0) / (results.originalIngredients?.filter(ing => ing.category === 'Protein Sources').length || 1);
                 
                 const lpsDiff = adjustedTarget - lpsAvgCP;
                 const hpsDiff = hpsAvgCP - adjustedTarget;
@@ -496,7 +537,7 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
                   <div>
                     <h4 className="font-semibold text-green-800 mb-2">🔋 Energy Sources (LPS):</h4>
                     <div className="space-y-1">
-                      {results.originalIngredients?.filter(ing => ing.category === 'Energy Source').map((ing, index) => (
+                      {results.originalIngredients?.filter(ing => ing.category === 'Energy Sources').map((ing, index) => (
                         <div key={index} className="text-sm bg-white p-2 rounded border">
                           <strong>{ing.name}:</strong> {ing.crudeProtein}% CP, {ing.energy} kcal/kg
                         </div>
@@ -506,7 +547,7 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
                   <div>
                     <h4 className="font-semibold text-green-800 mb-2">🥩 Protein Sources (HPS):</h4>
                     <div className="space-y-1">
-                      {results.originalIngredients?.filter(ing => ing.category === 'Protein Source').map((ing, index) => (
+                      {results.originalIngredients?.filter(ing => ing.category === 'Protein Sources').map((ing, index) => (
                         <div key={index} className="text-sm bg-white p-2 rounded border">
                           <strong>{ing.name}:</strong> {ing.crudeProtein}% CP, {ing.energy} kcal/kg
                         </div>
@@ -533,7 +574,7 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
                             <strong>HPS (High Protein Sources)</strong>
                           </div>
                           <div className="text-sm">
-                            {results.originalIngredients?.filter(ing => ing.category === 'Protein Source').map((ing, index) => (
+                            {results.originalIngredients?.filter(ing => ing.category === 'Protein Sources').map((ing, index) => (
                               <div key={index} className="text-xs">
                                 {ing.name}: {(ing.crudeProtein ?? 0).toFixed(3)}% CP
                               </div>
@@ -541,8 +582,8 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
                           </div>
                           <div className="font-bold text-blue-600 mt-1">
                             Avg: {(
-                              (results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + (ing.crudeProtein ?? 0), 0) / 
-                               (results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 1)
+                              (results.originalIngredients?.filter(ing => ing.category === 'Protein Sources').reduce((sum, ing) => sum + (ing.crudeProtein ?? 0), 0) / 
+                               (results.originalIngredients?.filter(ing => ing.category === 'Protein Sources').length || 1)
                               )
                             ).toFixed(3)}%
                           </div>
@@ -574,7 +615,7 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
                             <strong>LPS (Low Protein Sources)</strong>
                           </div>
                           <div className="text-sm">
-                            {results.originalIngredients?.filter(ing => ing.category === 'Energy Source').map((ing, index) => (
+                            {results.originalIngredients?.filter(ing => ing.category === 'Energy Sources').map((ing, index) => (
                               <div key={index} className="text-xs">
                                 {ing.name}: {(ing.crudeProtein ?? 0).toFixed(3)}% CP
                               </div>
@@ -582,8 +623,8 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
                           </div>
                           <div className="font-bold text-green-600 mt-1">
                             Avg: {(
-                              (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + (ing.crudeProtein ?? 0), 0) / 
-                               (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 1)
+                              (results.originalIngredients?.filter(ing => ing.category === 'Energy Sources').reduce((sum, ing) => sum + (ing.crudeProtein ?? 0), 0) / 
+                               (results.originalIngredients?.filter(ing => ing.category === 'Energy Sources').length || 1)
                               )
                             ).toFixed(3)}%
                           </div>
@@ -618,9 +659,9 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
                           <div>HPS Total: {isNaN(window.pearsonData?.lpsDiff) ? '0.000' : window.pearsonData?.lpsDiff.toFixed(3)} ÷ {isNaN(window.pearsonData?.totalRatio) ? '0.000' : window.pearsonData?.totalRatio.toFixed(3)} × {window.pearsonData?.remainingParts} = {isNaN(window.pearsonData?.hpsParts) ? '0.000' : window.pearsonData?.hpsParts.toFixed(3)}%</div>
                           <div>LPS Total: {isNaN(window.pearsonData?.hpsDiff) ? '0.000' : window.pearsonData?.hpsDiff.toFixed(3)} ÷ {isNaN(window.pearsonData?.totalRatio) ? '0.000' : window.pearsonData?.totalRatio.toFixed(3)} × {window.pearsonData?.remainingParts} = {isNaN(window.pearsonData?.lpsParts) ? '0.000' : window.pearsonData?.lpsParts.toFixed(3)}%</div>
                           {/* <div className="mt-2 text-sm text-blue-600">
-                            <div>LPS Division: {((((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) / (((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) + (((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0))))) * 80).toFixed(3)}% ÷ 2 = {((((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) / (((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) + (((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0))))) * 80 / 2).toFixed(3)}% each (Jowar & Maize)</div>
+                            <div>LPS Division: {((((results.originalIngredients?.filter(ing => ing.category === 'Protein Sources').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Sources').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) / (((results.originalIngredients?.filter(ing => ing.category === 'Protein Sources').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Sources').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) + (((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Sources').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Sources').length || 0))))) * 80).toFixed(3)}% ÷ 2 = {((((results.originalIngredients?.filter(ing => ing.category === 'Protein Sources').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Sources').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) / (((results.originalIngredients?.filter(ing => ing.category === 'Protein Sources').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Sources').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) + (((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Sources').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Sources').length || 0))))) * 80 / 2).toFixed(3)}% each (Jowar & Maize)</div>
                           </div> */}
-                          {/* <div>LPS per each ingredient: {((((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0)) / (((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) + (((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0))))) * 80).toFixed(3)} ÷ {results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 1} = {((((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0)) / (((results.originalIngredients?.filter(ing => ing.category === 'Protein Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Source').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) + (((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 0))))) * 80 / (results.originalIngredients?.filter(ing => ing.category === 'Energy Source').length || 1)).toFixed(3)}% each</div> */}
+                          {/* <div>LPS per each ingredient: {((((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Sources').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Sources').length || 0)) / (((results.originalIngredients?.filter(ing => ing.category === 'Protein Sources').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Sources').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) + (((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Sources').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Sources').length || 0))))) * 80).toFixed(3)} ÷ {results.originalIngredients?.filter(ing => ing.category === 'Energy Sources').length || 1} = {((((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Sources').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Sources').length || 0)) / (((results.originalIngredients?.filter(ing => ing.category === 'Protein Sources').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Protein Sources').length || 0) - (((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100)) + (((((results.formulation?.nutritionalAnalysis?.required?.crudeProtein - (10 * 11 / 100)) / 80) * 100) - (results.originalIngredients?.filter(ing => ing.category === 'Energy Sources').reduce((sum, ing) => sum + ing.crudeProtein, 0) / results.originalIngredients?.filter(ing => ing.category === 'Energy Sources').length || 0))))) * 80 / (results.originalIngredients?.filter(ing => ing.category === 'Energy Sources').length || 1)).toFixed(3)}% each</div> */}
                         </div>
                       </div>
                     </div>
@@ -632,9 +673,53 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
                 </p>
               </div>
 
-              {/* Step 4: Supplement Addition */}
+              {/* Step 4: Inclusion Limits Applied */}
+              {results.inclusionWarnings && results.inclusionWarnings.length > 0 && (
+                <div className="mb-6 bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                  <h3 className="text-lg font-semibold text-yellow-800 mb-3">⚠️ Step 4: Inclusion Limits Applied</h3>
+                  <div className="space-y-3">
+                    {results.inclusionWarnings.map((warning, index) => (
+                      <div key={index} className="bg-white p-3 rounded border">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-semibold text-red-600">{warning.ingredient}</span>
+                          <span className="text-sm text-gray-600">
+                            {warning.type === 'above_maximum' ? 'Exceeded Maximum' : 'Below Minimum'}
+                          </span>
+                        </div>
+                        <div className="text-sm text-gray-700 mb-2">
+                          {warning.message}
+                        </div>
+                        <div className="bg-gray-50 p-2 rounded text-sm">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <strong>Calculated Value:</strong> {warning.actual}%
+                            </div>
+                            <div>
+                              <strong>Limit Applied:</strong> {
+                                warning.type === 'above_maximum' ? warning.maximum : warning.minimum
+                              }%
+                            </div>
+                          </div>
+                          <div className="mt-2 text-xs text-gray-600">
+                            <strong>Adjustment:</strong> {warning.actual}% → {
+                              warning.type === 'above_maximum' ? warning.maximum : warning.minimum
+                            }% ({warning.type === 'above_maximum' ? 'Reduced' : 'Increased'} by {
+                              Math.abs(warning.actual - (warning.type === 'above_maximum' ? warning.maximum : warning.minimum))
+                            }%)
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 text-sm text-yellow-700 bg-yellow-100 p-2 rounded">
+                    <strong>Safety Note:</strong> These adjustments ensure the formulation meets safety standards for ingredient inclusion levels.
+                  </div>
+                </div>
+              )}
+
+              {/* Step 5: Supplement Addition */}
               <div className="mb-6 bg-orange-50 p-4 rounded-lg border border-orange-200">
-                <h3 className="text-lg font-semibold text-orange-800 mb-3">💊 Step 4: Supplement Addition</h3>
+                <h3 className="text-lg font-semibold text-orange-800 mb-3">💊 Step 5: Supplement Addition</h3>
                 <div className="space-y-2">
                   {results.formulation?.ingredients?.filter(ing => ing.isSupplement).map((ing, index) => (
                     <div key={index} className="bg-white p-2 rounded border text-sm">
@@ -654,9 +739,9 @@ const ResultsDisplay = ({ results, onSave, onReset }) => {
                 </div>
               </div>
 
-              {/* Step 5: Final Results */}
+              {/* Step 6: Final Results */}
               <div className="mb-6 bg-emerald-50 p-4 rounded-lg border border-emerald-200">
-                <h3 className="text-lg font-semibold text-emerald-800 mb-3">🎯 Step 5: Final Formulation Results</h3>
+                <h3 className="text-lg font-semibold text-emerald-800 mb-3">🎯 Step 6: Final Formulation Results</h3>
                 <div className="space-y-2">
                   <h4 className="font-semibold mb-2">Final Ingredient List:</h4>
                   {updatedCalculation.ingredients.map((ingredient, index) => (

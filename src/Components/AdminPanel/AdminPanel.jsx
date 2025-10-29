@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SpeciesManagement from './SpeciesManagement';
 import IngredientManagement from './IngredientManagement';
+import InclusionLimitsManagement from './InclusionLimitsManagement';
 import { verifyToken } from '../../services/api';
 import './AdminPanel.css';
 
@@ -119,12 +120,19 @@ const AdminPanel = () => {
             >
               Ingredient Management
             </button>
+            <button
+              onClick={() => setActiveTab('inclusion-limits')}
+              className={`admin-tab-btn ${activeTab === 'inclusion-limits' ? 'active' : ''}`}
+            >
+              Inclusion Limits
+            </button>
           </div>
 
           {/* Tab Content */}
           <div className="admin-content">
             {activeTab === 'species' && <SpeciesManagement />}
             {activeTab === 'ingredients' && <IngredientManagement />}
+            {activeTab === 'inclusion-limits' && <InclusionLimitsManagement />}
           </div>
         </div>
       </div>

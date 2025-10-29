@@ -238,7 +238,7 @@ const Navbar = ({ onLogout }) => {
               textTransform: 'uppercase',
               color: isDarkMode ? '#D1D5DB' : '#6B7280'
             }}>
-              SUPPLIMENTS
+              SUPPLEMENTS
             </span>
           </div>
 

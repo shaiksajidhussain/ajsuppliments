@@ -13,10 +13,9 @@ const IngredientSelection = ({ onIngredientsChange, className = '', style }) => 
   const fetchIngredients = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('authToken');
+      console.log('🔍 Fetching ingredients...');
       const response = await fetch('http://localhost:3001/api/ingredients', {
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         credentials: 'include'
@@ -27,6 +26,8 @@ const IngredientSelection = ({ onIngredientsChange, className = '', style }) => 
       }
 
       const data = await response.json();
+        console.log('🔍 Fetched ingredients:', data.ingredients?.length || 0);
+      console.log('🔍 Ingredients details:', data.ingredients?.map(ing => ({ id: ing.id, name: ing.name, category: ing.category })));
       setIngredients(data.ingredients || []);
       setError(null);
     } catch (err) {
@@ -38,15 +39,24 @@ const IngredientSelection = ({ onIngredientsChange, className = '', style }) => 
   };
 
   const handleIngredientToggle = (ingredientId) => {
+    console.log('🔍 Toggling ingredient:', ingredientId);
+    console.log('🔍 Current ingredients:', ingredients.map(ing => ({ id: ing.id, name: ing.name })));
+    
     setSelectedIngredients(prev => {
       const newSelection = prev.includes(ingredientId)
         ? prev.filter(id => id !== ingredientId)
         : [...prev, ingredientId];
       
+      console.log('🔍 New selection:', newSelection);
+      
       // Notify parent component of the change
       if (onIngredientsChange) {
         const selectedIngredientObjects = ingredients.filter(ing => newSelection.includes(ing.id));
-        onIngredientsChange(selectedIngredientObjects);
+        console.log('🔍 Selected ingredient objects:', selectedIngredientObjects.map(ing => ({ id: ing.id, name: ing.name })));
+        // Use setTimeout to avoid React warning about setState during render
+        setTimeout(() => {
+          onIngredientsChange(selectedIngredientObjects);
+        }, 0);
       }
       
       return newSelection;
@@ -63,11 +73,14 @@ const IngredientSelection = ({ onIngredientsChange, className = '', style }) => 
     return acc;
   }, {});
 
-  // Define the three main categories we want to display
+  // Define the main categories we want to display
   const mainCategories = [
-    { name: 'Protein Source',color: 'text-red-600' },
-    { name: 'Medium Source',  color: 'text-amber-600' },
-    { name: 'Energy Source', color: 'text-green-600' }
+    { name: 'Protein Sources', color: 'text-red-600' },
+    { name: 'Energy Sources', color: 'text-green-600' },
+    { name: 'Medium Source', color: 'text-amber-600' },
+    // { name: 'Minerals', color: 'text-blue-600' },
+    // { name: 'Amino Acids', color: 'text-purple-600' },
+    // { name: 'Vitamins', color: 'text-yellow-600' }
   ];
 
   if (loading) {
@@ -96,7 +109,7 @@ const IngredientSelection = ({ onIngredientsChange, className = '', style }) => 
     <div className={`bg-white/95 backdrop-blur-sm relative top-10 rounded-lg p-6 shadow-xl border border-white/20 mt-10 ${className}`} style={style}>
       <h2 className="text-2xl font-semibold text-gray-900 mb-6">Select Ingredients</h2>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {mainCategories.map((category) => {
           const categoryIngredients = groupedIngredients[category.name] || [];
           

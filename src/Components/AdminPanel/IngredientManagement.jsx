@@ -26,18 +26,18 @@ const IngredientManagement = () => {
     salt: 0.3,  // Default value
     cost: 0,
     premix: 1,  // Default value
+    minInclusion: 0,  // Minimum inclusion percentage
+    maxInclusion: 100,  // Maximum inclusion percentage
     description: ''
   });
 
   const categories = [
-    'Energy Source',
-    'Protein Source',
+    'Energy Sources',
+    'Protein Sources',
     'Medium Source',
-    // 'Vitamin',
-    // 'Mineral',
-    // 'Additive',
-    // 'Binder',
-    // 'Preservative'
+    'Minerals',
+    'Amino Acids',
+    'Vitamins'
   ];
 
   useEffect(() => {
@@ -165,6 +165,8 @@ const IngredientManagement = () => {
       salt: ingredient.salt || 0.3,
       cost: ingredient.cost,
       premix: ingredient.premix || 1,
+      minInclusion: ingredient.minInclusion || 0,
+      maxInclusion: ingredient.maxInclusion || 100,
       description: ingredient.description || ''
     });
     setShowForm(true);
@@ -188,6 +190,8 @@ const IngredientManagement = () => {
       salt: ingredient.salt || 0.3,
       cost: ingredient.cost,
       premix: ingredient.premix || 1,
+      minInclusion: ingredient.minInclusion || 0,
+      maxInclusion: ingredient.maxInclusion || 100,
       description: ingredient.description || ''
     });
     setShowForm(true);
@@ -557,6 +561,30 @@ const IngredientManagement = () => {
               />
             </div>
             
+            <div className="form-group">
+              <label className="form-label">Min Inclusion (%)</label>
+              <input
+                type="number"
+                step="0.1"
+                value={formData.minInclusion}
+                onChange={(e) => setFormData({ ...formData, minInclusion: parseFloat(e.target.value) || 0 })}
+                className="form-input"
+                placeholder="0"
+              />
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Max Inclusion (%)</label>
+              <input
+                type="number"
+                step="0.1"
+                value={formData.maxInclusion}
+                onChange={(e) => setFormData({ ...formData, maxInclusion: parseFloat(e.target.value) || 100 })}
+                className="form-input"
+                placeholder="100"
+              />
+            </div>
+            
             <div className="form-group" style={{ gridColumn: '1 / -1' }}>
               <label className="form-label">Description</label>
               <textarea
@@ -654,6 +682,12 @@ const IngredientManagement = () => {
                 </div>
                 <div className="ingredient-detail">
                   <span className="ingredient-detail-label">Premix:</span> {ingredient.premix}%
+                </div>
+                <div className="ingredient-detail">
+                  <span className="ingredient-detail-label">Min Inclusion:</span> {ingredient.minInclusion || 0}%
+                </div>
+                <div className="ingredient-detail">
+                  <span className="ingredient-detail-label">Max Inclusion:</span> {ingredient.maxInclusion || 100}%
                 </div>
               </div>
             
